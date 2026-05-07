@@ -1,0 +1,75 @@
+.melody-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.composer-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.editor-container {
+  position: relative;
+  width: 100%;
+}
+
+.editor-backdrop,
+.notation-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  font-family: 'Courier New', monospace;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.editor-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  pointer-events: none;
+  background: white;
+  color: transparent;
+  border-color: transparent;
+}
+
+.notation-input {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  color: transparent;
+  caret-color: #333;
+  resize: none;
+  overflow: hidden;
+}
+
+.notation-input:focus {
+  outline: none;
+  border-color: #61dafb;
+}
+
+.notation-input::placeholder {
+  color: #aaa;
+}
+
+.editor-backdrop .highlight-notes {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.editor-backdrop .highlight-lyrics {
+  color: #e65100;
+  font-style: italic;
+}

@@ -1,0 +1,138 @@
+.composer-page {
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.composer-container {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.page-header {
+  text-align: center;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.page-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 2.5rem;
+  color: #282c34;
+}
+
+.page-description {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.composer-section,
+.player-section {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.composer-section .composer-label {
+  display: block;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.player-section h2 {
+  margin: 0 0 16px 0;
+  font-size: 1.5rem;
+  color: #282c34;
+}
+
+.examples-section {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.examples-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.3rem;
+  color: #282c34;
+}
+
+.examples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.example-btn {
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1976d2;
+  background-color: #e3f2fd;
+  border: 2px solid #1976d2;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.example-btn:hover {
+  background-color: #1976d2;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+}
+
+.example-btn:active {
+  transform: translateY(0);
+}
+
+.info-section {
+  text-align: left;
+  margin-top: 12px;
+}
+
+.info-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.3rem;
+  color: #282c34;
+}
+
+.info-section ul {
+  margin: 0;
+  padding-left: 24px;
+  color: #555;
+  line-height: 1.8;
+}
+
+.info-section li {
+  margin-bottom: 8px;
+}
+
+.info-section strong {
+  color: #1976d2;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .page-header h1 {
+    font-size: 2rem;
+  }
+
+  .examples-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .composer-container {
+    gap: 20px;
+  }
+}
