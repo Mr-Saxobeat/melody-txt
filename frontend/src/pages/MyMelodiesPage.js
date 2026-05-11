@@ -72,7 +72,7 @@ function MyMelodiesPage() {
       ) : (
         <div className="melody-grid">
           {melodies.map((melody) => (
-            <div key={melody.id} className="melody-card">
+            <div key={melody.id} className="melody-card" onClick={() => navigate(`/shared/${melody.share_id}`)} style={{ cursor: 'pointer' }}>
               <div className="melody-card-header">
                 <h3>{melody.title}</h3>
               </div>
@@ -82,7 +82,7 @@ function MyMelodiesPage() {
                 <span>{new Date(melody.created_at).toLocaleDateString()}</span>
               </div>
               {/* <MelodyPlayer notation={melody.notation} /> */}
-              <div className="melody-actions">
+              <div className="melody-actions" onClick={(e) => e.stopPropagation()}>
                 <button
                   className="btn-share"
                   onClick={() => handleShare(melody)}

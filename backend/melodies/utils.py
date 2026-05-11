@@ -14,7 +14,7 @@ EXTENDED_NOTE_REGEX = re.compile(
 )
 
 # Symbols that are ignored when determining if a line is notes
-IGNORED_SYMBOL_REGEX = re.compile(r'^[|:\-./()0-9]+$')
+IGNORED_SYMBOL_REGEX = re.compile(r'^[|:\-./()0-9,;]+$')
 
 # Symbols to strip from beginning/end of tokens before validating as notes
 STRIP_SYMBOLS_REGEX = re.compile(r'^[|:\-./()]*(.*?)[|:\-./()]*$')
@@ -40,14 +40,15 @@ def is_valid_note_token(token):
 
 
 def is_note_line(line):
-    """Determine if a line contains only notes and ignored symbols (not lyrics)."""
+    """Determine if a line is a note line: majority of non-ignored tokens must be valid notes."""
     if not line or not line.strip():
         return False
     tokens = line.strip().split()
-    return all(
-        is_valid_note_token(token) or is_ignored_symbol(token)
-        for token in tokens
-    )
+    non_ignored = [t for t in tokens if not is_ignored_symbol(t)]
+    if not non_ignored:
+        return False
+    note_count = sum(1 for t in non_ignored if is_valid_note_token(t))
+    return note_count > len(non_ignored) / 2
 
 
 def is_valid_solfege_notation(text):
@@ -223,3 +224,85 @@ def get_invalid_syllables(text):
         return [s for s in syllables if s not in VALID_SOLFEGE_SYLLABLES]
     except ValueError:
         return []
+
+
+def transpose_between_instruments(notation, from_instrument, to_instrument):
+    """
+    Transpose notation between two instruments using their concert pitch offsets.
+
+    Net shift = target.offset - source.offset semitones applied to each note.
+    Non-note lines (lyrics) are preserved as-is.
+    """
+    from melodies.models import INSTRUMENT_OFFSETS
+
+    from_offset = INSTRUMENT_OFFSETS.get(from_instrument, 0)
+    to_offset = INSTRUMENT_OFFSETS.get(to_instrument, 0)
+    net_shift = to_offset - from_offset
+
+    if net_shift == 0:
+        return notation
+
+    return _transpose_notation_text(notation, net_shift)
+
+
+def _transpose_notation_text(text, semitones):
+    """Transpose all note tokens in a text by the given number of semitones."""
+    if not text or not text.strip():
+        return text
+
+    lines = text.split('\n')
+    result = []
+    for line in lines:
+        if not is_note_line(line):
+            result.append(line)
+            continue
+        tokens = line.split()
+        transposed_tokens = []
+        for token in tokens:
+            stripped = strip_symbols(token)
+            match = EXTENDED_NOTE_REGEX.match(stripped)
+            if not match:
+                transposed_tokens.append(token)
+                continue
+            syllable_raw = match.group(1)
+            accidental = match.group(2) or ''
+            number_str = match.group(3) or ''
+
+            is_upper = syllable_raw[0].isupper()
+            syllable = syllable_raw.lower()
+
+            base_semitone = SOLFEGE_TO_SEMITONE.get(syllable, 0)
+            acc_offset = 1 if accidental == '#' else (-1 if accidental == 'b' else 0)
+
+            if is_upper:
+                octave = 5 + (int(number_str) if number_str else 0)
+            else:
+                octave = 4 - (int(number_str) if number_str else 0)
+
+            absolute = octave * 12 + base_semitone + acc_offset + semitones
+            new_octave = absolute // 12
+            note_index = absolute % 12
+
+            prefer_sharp = semitones > 0
+            sharp_names = ['do', 'do#', 're', 're#', 'mi', 'fa', 'fa#', 'sol', 'sol#', 'la', 'la#', 'si']
+            flat_names = ['do', 'reb', 're', 'mib', 'mi', 'fa', 'solb', 'sol', 'lab', 'la', 'sib', 'si']
+            names = sharp_names if prefer_sharp else flat_names
+            note_name = names[note_index]
+
+            new_syllable = note_name.replace('#', '').replace('b', '')
+            new_acc = '#' if '#' in note_name else ('b' if 'b' in note_name else '')
+
+            if new_octave == 4:
+                result_token = new_syllable + new_acc
+            elif new_octave == 5:
+                result_token = new_syllable.capitalize() + new_acc
+            elif new_octave < 4:
+                num = 4 - new_octave
+                result_token = new_syllable + new_acc + str(num)
+            else:
+                num = new_octave - 5
+                result_token = new_syllable.capitalize() + new_acc + (str(num) if num > 0 else '')
+
+            transposed_tokens.append(result_token)
+        result.append(' '.join(transposed_tokens))
+    return '\n'.join(result)

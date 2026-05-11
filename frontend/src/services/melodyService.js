@@ -36,6 +36,30 @@ const melodyService = {
     const response = await api.get(`/melodies/shared/${shareId}/`);
     return response.data;
   },
+
+  async getTabs(melodyId) {
+    const response = await api.get(`/melodies/${melodyId}/tabs/`);
+    return response.data;
+  },
+
+  async addTab(melodyId, instrument, notation, position, sourceInstrument = 'piano') {
+    const response = await api.post(`/melodies/${melodyId}/tabs/`, {
+      instrument,
+      notation,
+      position,
+      source_instrument: sourceInstrument,
+    });
+    return response.data;
+  },
+
+  async updateTab(melodyId, tabId, data) {
+    const response = await api.put(`/melodies/${melodyId}/tabs/${tabId}/`, data);
+    return response.data;
+  },
+
+  async deleteTab(melodyId, tabId) {
+    await api.delete(`/melodies/${melodyId}/tabs/${tabId}/`);
+  },
 };
 
 export default melodyService;

@@ -9,10 +9,7 @@ export function isValidSolfege(text) {
   const lines = text.split('\n');
   const noteLines = lines.filter((line) => line.trim() && isNoteLine(line));
 
-  if (noteLines.length === 0) return false;
-
-  const tokens = noteLines.flatMap((line) => line.trim().split(/\s+/));
-  return tokens.every((token) => parseNote(token) !== null || isIgnoredSymbol(token));
+  return noteLines.length > 0;
 }
 
 export function parseNotes(text) {
@@ -46,7 +43,7 @@ export function getInvalidSyllables(text) {
     if (!line.trim()) continue;
     if (isNoteLine(line)) {
       const tokens = line.trim().split(/\s+/);
-      invalid.push(...tokens.filter((token) => parseNote(token) === null));
+      invalid.push(...tokens.filter((token) => parseNote(token) === null && !isIgnoredSymbol(token)));
     }
   }
 

@@ -23,10 +23,10 @@ This is a **web application** with:
 
 **Purpose**: Create the MelodyTab model and instrument definitions
 
-- [ ] T001 [P] Create instrument constants in frontend/src/utils/instruments.js: define INSTRUMENTS array with { id, name, key, offset } for Piano (0), Saxophone Eb (+9), Trumpet Bb (+2), Trombone C (0); export transposeForInstrument(notation, fromInstrument, toInstrument) helper
-- [ ] T002 [P] Create MelodyTab model in backend/melodies/models.py: id:UUID, melody:FK CASCADE, instrument:str (choices), notation:text, position:int, suffix:str(50) nullable, created_at
-- [ ] T003 Create migration for MelodyTab: python manage.py makemigrations melodies
-- [ ] T004 Add INSTRUMENT_CHOICES constant in backend/melodies/models.py: list of (key, label) tuples for piano, saxophone, trumpet, trombone with their offsets
+- [x] T001 [P] Create instrument constants in frontend/src/utils/instruments.js: define INSTRUMENTS array with { id, name, key, offset } for Piano (0), Saxophone Eb (+9), Trumpet Bb (+2), Trombone C (0); export transposeForInstrument(notation, fromInstrument, toInstrument) helper
+- [x] T002 [P] Create MelodyTab model in backend/melodies/models.py: id:UUID, melody:FK CASCADE, instrument:str (choices), notation:text, position:int, suffix:str(50) nullable, created_at
+- [x] T003 Create migration for MelodyTab: python manage.py makemigrations melodies
+- [x] T004 Add INSTRUMENT_CHOICES constant in backend/melodies/models.py: list of (key, label) tuples for piano, saxophone, trumpet, trombone with their offsets
 
 ---
 
@@ -36,17 +36,17 @@ This is a **web application** with:
 
 **Independent Test**: Create melody with "do re mi" on piano, add saxophone tab, verify shows "la si do#"
 
-- [ ] T005 [P] [US1] Create MelodyTabSerializer in backend/api/serializers.py: fields (id, instrument, notation, position, suffix, created_at), nested in MelodySerializer as tabs list
-- [ ] T006 [P] [US1] Create MelodyTabViewSet in backend/api/views.py: POST to create tab (with auto-transposition from source tab), PUT to update notation/instrument/suffix, DELETE to remove tab; max 10 tabs validation
-- [ ] T007 [US1] Add tab routes in backend/api/urls.py: /api/melodies/{melody_id}/tabs/ (list/create), /api/melodies/{melody_id}/tabs/{tab_id}/ (update/delete)
-- [ ] T008 [US1] Update MelodySerializer in backend/api/serializers.py: include nested tabs in melody detail and shared melody responses
-- [ ] T009 [US1] Add instrument transposition helper in backend/melodies/utils.py: transpose_between_instruments(notation, from_instrument, to_instrument) using offset arithmetic
-- [ ] T010 [P] [US1] Create InstrumentTabs component in frontend/src/components/InstrumentTabs.js: tab bar showing instrument names, "+" button to add tab, active tab highlighting, click tab to switch
-- [ ] T011 [US1] Create InstrumentModal component in frontend/src/components/InstrumentModal.js: modal listing available instruments, onClick selects instrument and closes modal
-- [ ] T012 [US1] Integrate InstrumentTabs into ComposerPage in frontend/src/pages/ComposerPage.js: manage tabs state, active tab switches notation in editor, new tab auto-transposes from current tab's instrument
-- [ ] T013 [US1] Add tab suffix editing in InstrumentTabs: clicking tab name opens inline editor for suffix (instrument prefix not editable)
-- [ ] T014 [US1] Add tab deletion in InstrumentTabs: X button or swipe to delete a tab (with confirmation)
-- [ ] T015 [US1] Create frontend tab service in frontend/src/services/melodyService.js: addTab(melodyId, instrument, notation, position), updateTab(melodyId, tabId, data), deleteTab(melodyId, tabId)
+- [x] T005 [P] [US1] Create MelodyTabSerializer in backend/api/serializers.py: fields (id, instrument, notation, position, suffix, created_at), nested in MelodySerializer as tabs list
+- [x] T006 [P] [US1] Create MelodyTabViewSet in backend/api/views.py: POST to create tab (with auto-transposition from source tab), PUT to update notation/instrument/suffix, DELETE to remove tab; max 10 tabs validation
+- [x] T007 [US1] Add tab routes in backend/api/urls.py: /api/melodies/{melody_id}/tabs/ (list/create), /api/melodies/{melody_id}/tabs/{tab_id}/ (update/delete)
+- [x] T008 [US1] Update MelodySerializer in backend/api/serializers.py: include nested tabs in melody detail and shared melody responses
+- [x] T009 [US1] Add instrument transposition helper in backend/melodies/utils.py: transpose_between_instruments(notation, from_instrument, to_instrument) using offset arithmetic
+- [x] T010 [P] [US1] Create InstrumentTabs component in frontend/src/components/InstrumentTabs.js: tab bar showing instrument names, "+" button to add tab, active tab highlighting, click tab to switch
+- [x] T011 [US1] Create InstrumentModal component in frontend/src/components/InstrumentModal.js: modal listing available instruments, onClick selects instrument and closes modal
+- [x] T012 [US1] Integrate InstrumentTabs into ComposerPage in frontend/src/pages/ComposerPage.js: manage tabs state, active tab switches notation in editor, new tab auto-transposes from current tab's instrument
+- [x] T013 [US1] Add tab suffix editing in InstrumentTabs: clicking tab name opens inline editor for suffix (instrument prefix not editable)
+- [x] T014 [US1] Add tab deletion in InstrumentTabs: X button or swipe to delete a tab (with confirmation)
+- [x] T015 [US1] Create frontend tab service in frontend/src/services/melodyService.js: addTab(melodyId, instrument, notation, position), updateTab(melodyId, tabId, data), deleteTab(melodyId, tabId)
 
 **Checkpoint**: User can create melody, add instrument tabs, see transposed notation, edit each tab independently
 
@@ -58,9 +58,9 @@ This is a **web application** with:
 
 **Independent Test**: With piano "do re mi" and saxophone "la si do#", click up half step — both shift by 1 semitone
 
-- [ ] T016 [US2] Update ComposerPage transpose handler in frontend/src/pages/ComposerPage.js: when transpose button clicked, apply transposeNotes to ALL tabs' notations (not just active tab)
-- [ ] T017 [US2] Update SharedMelodyPage in frontend/src/pages/SharedMelodyPage.js: display tabs as read-only switchable views, transpose affects all tabs, remember selected tab via ?instrument= query param
-- [ ] T018 [US2] Implement setlist instrument memory in SharedMelodyPage: when navigating between setlist melodies, match tab by full label (instrument + suffix), fallback to same instrument, then first tab
+- [x] T016 [US2] Update ComposerPage transpose handler in frontend/src/pages/ComposerPage.js: when transpose button clicked, apply transposeNotes to ALL tabs' notations (not just active tab)
+- [x] T017 [US2] Update SharedMelodyPage in frontend/src/pages/SharedMelodyPage.js: display tabs as read-only switchable views, transpose affects all tabs, remember selected tab via ?instrument= query param
+- [x] T018 [US2] Implement setlist instrument memory in SharedMelodyPage: when navigating between setlist melodies, match tab by full label (instrument + suffix), fallback to same instrument, then first tab
 
 **Checkpoint**: Transposition works across all tabs; setlist navigation remembers instrument selection
 
@@ -70,9 +70,9 @@ This is a **web application** with:
 
 **Purpose**: Handle existing melodies and ensure backward compatibility
 
-- [ ] T019 Create data migration to add default "Piano in C" tab for all existing melodies that have notation but no tabs in backend/melodies/migrations/
-- [ ] T020 Update SharedMelodySerializer in backend/api/serializers.py: include tabs in shared melody response
-- [ ] T021 Ensure melody CRUD still works without tabs (backward compatible): notation field remains as fallback
+- [x] T019 Create data migration to add default "Piano in C" tab for all existing melodies that have notation but no tabs in backend/melodies/migrations/
+- [x] T020 Update SharedMelodySerializer in backend/api/serializers.py: include tabs in shared melody response
+- [x] T021 Ensure melody CRUD still works without tabs (backward compatible): notation field remains as fallback
 
 ---
 
@@ -80,9 +80,9 @@ This is a **web application** with:
 
 **Purpose**: Final verification
 
-- [ ] T022 Run full backend test suite and verify all tests pass
-- [ ] T023 Run full frontend test suite and verify all tests pass
-- [ ] T024 Verify frontend compiles without errors
+- [x] T022 Run full backend test suite and verify all tests pass
+- [x] T023 Run full frontend test suite and verify all tests pass
+- [x] T024 Verify frontend compiles without errors
 
 ---
 

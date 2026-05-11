@@ -7,13 +7,15 @@ from .serializers import (
     UserRegistrationSerializer,
     UserSerializer,
     MelodySerializer,
+    MelodyTabSerializer,
     SharedMelodySerializer,
     SetlistSerializer,
     SetlistListSerializer,
     SetlistEntrySerializer,
     SharedSetlistSerializer,
 )
-from melodies.models import Melody
+from melodies.models import Melody, MelodyTab
+from melodies.utils import transpose_between_instruments
 from setlists.models import Setlist, SetlistEntry
 
 
@@ -105,6 +107,92 @@ class TransposeMelodyView(generics.GenericAPIView):
             'notation': melody.notation,
             'transposed_pitches': transposed,
         })
+
+
+class MelodyTabView(generics.GenericAPIView):
+    """CRUD operations for melody instrument tabs."""
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = MelodyTabSerializer
+
+    def get_melody(self, request, melody_id):
+        return Melody.objects.filter(id=melody_id, user=request.user).first()
+
+    def get(self, request, melody_id):
+        melody = self.get_melody(request, melody_id)
+        if not melody:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        tabs = melody.tabs.all()
+        serializer = MelodyTabSerializer(tabs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, melody_id):
+        melody = self.get_melody(request, melody_id)
+        if not melody:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if melody.tabs.count() >= 10:
+            return Response(
+                {'detail': 'Maximum 10 tabs per melody.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        instrument = request.data.get('instrument')
+        valid_instruments = [c[0] for c in MelodyTab._meta.get_field('instrument').choices]
+        if not instrument or instrument not in valid_instruments:
+            return Response(
+                {'instrument': f'Must be one of: {", ".join(valid_instruments)}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        source_instrument = request.data.get('source_instrument', 'piano')
+        source_notation = request.data.get('notation') or melody.notation
+        notation = transpose_between_instruments(source_notation, source_instrument, instrument)
+
+        position = request.data.get('position', melody.tabs.count())
+        suffix = request.data.get('suffix')
+
+        tab = MelodyTab.objects.create(
+            melody=melody,
+            instrument=instrument,
+            notation=notation,
+            position=position,
+            suffix=suffix,
+        )
+        serializer = MelodyTabSerializer(tab)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def put(self, request, melody_id, tab_id=None):
+        melody = self.get_melody(request, melody_id)
+        if not melody:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        tab = melody.tabs.filter(id=tab_id).first()
+        if not tab:
+            return Response({'detail': 'Tab not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if 'notation' in request.data:
+            tab.notation = request.data['notation']
+        if 'suffix' in request.data:
+            tab.suffix = request.data['suffix']
+        if 'position' in request.data:
+            tab.position = request.data['position']
+        tab.save()
+
+        serializer = MelodyTabSerializer(tab)
+        return Response(serializer.data)
+
+    def delete(self, request, melody_id, tab_id=None):
+        melody = self.get_melody(request, melody_id)
+        if not melody:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        tab = melody.tabs.filter(id=tab_id).first()
+        if not tab:
+            return Response({'detail': 'Tab not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        tab.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SetlistViewSet(viewsets.ModelViewSet):

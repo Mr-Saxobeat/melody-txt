@@ -89,8 +89,13 @@ describe('classifyLines', () => {
     expect(result[2].type).toBe('notes');
   });
 
-  test('line with any invalid token is lyrics', () => {
+  test('line with majority notes is classified as notes despite unrecognized token', () => {
     const result = classifyLines('do re hello mi');
+    expect(result[0].type).toBe('notes');
+  });
+
+  test('line with majority non-notes is classified as lyrics', () => {
+    const result = classifyLines('hello world do foo');
     expect(result[0].type).toBe('lyrics');
   });
 });

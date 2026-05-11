@@ -58,8 +58,8 @@ describe('transposeNotes', () => {
     expect(transposeNotes('   ', 1)).toBe('   ');
   });
 
-  test('treats line with invalid token as lyrics (unchanged)', () => {
-    expect(transposeNotes('do xyz mi', 1)).toBe('do xyz mi');
+  test('transposes notes on line with unrecognized token, passes token through', () => {
+    expect(transposeNotes('do xyz mi', 1)).toBe('do# xyz fa');
   });
 
   test('preserves whitespace formatting between notes', () => {
@@ -79,8 +79,8 @@ describe('transposeNotes', () => {
     expect(transposeNotes('do re mi\nHappy birthday\nfa sol', 1)).toBe('do# re# fa\nHappy birthday\nfa# sol#');
   });
 
-  test('line with any non-note token is treated as lyrics', () => {
-    expect(transposeNotes('do re hello\ndo re mi', 1)).toBe('do re hello\ndo# re# fa');
+  test('line with majority notes transposes, unrecognized tokens pass through', () => {
+    expect(transposeNotes('do re hello\ndo re mi', 1)).toBe('do# re# hello\ndo# re# fa');
   });
 
   test('ignores symbol tokens (|, :, etc.) when classifying lines', () => {

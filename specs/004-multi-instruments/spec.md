@@ -67,6 +67,7 @@ When a user uses the transpose controls on the compose or shared melody page, al
 - **FR-010**: On the shared/view melody page, tabs are displayed read-only — users can switch between them
 - **FR-010a**: When navigating between melodies in a setlist, the system MUST remember the user's selected tab by full label (instrument + suffix, e.g., "Trombone - 1") and auto-select the tab with the exact same full label on the next melody. If no exact match exists, fall back to first tab matching the same instrument. If no instrument match, fall back to the first available tab.
 - **FR-011**: Instruments are a fixed list (no CRUD) with name and semitone offset from Piano in C
+- **FR-012**: When validating or transposing a melody line, unrecognized symbols MUST be silently ignored (passed through unchanged); only valid solfege tokens are transposed. A line is never invalidated due to containing unrecognized symbols alongside valid notes.
 
 ### Key Entities
 
@@ -90,6 +91,7 @@ When a user uses the transpose controls on the compose or shared melody page, al
 - Q: Can the user change any tab's instrument at any time? → A: Yes, any tab (including the first) can have its instrument changed at any time
 - Q: Can transposition work between any pair of instruments? → A: Yes, any-to-any transposition via concert pitch intermediate (source offset → concert → target offset)
 - Q: What happens to instrument tab selection when navigating setlist? → A: Matches by full label (instrument + suffix, e.g. "Trombone - 1"); falls back to same instrument without suffix match; then first tab
+- Q: How should invalid symbols on a melody line be handled? → A: Ignore invalid symbols and validate only the valid notes; never invalidate an entire line due to unrecognized symbols
 
 ## Assumptions
 

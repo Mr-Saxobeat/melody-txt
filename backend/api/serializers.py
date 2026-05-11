@@ -103,15 +103,26 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
 
+class MelodyTabSerializer(serializers.ModelSerializer):
+    """Serializer for instrument tabs."""
+
+    class Meta:
+        model = None  # Set below after import
+        fields = ['id', 'instrument', 'notation', 'position', 'suffix', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
 class MelodySerializer(serializers.ModelSerializer):
     """Full melody serializer for CRUD operations."""
+
+    tabs = MelodyTabSerializer(many=True, read_only=True)
 
     class Meta:
         model = None  # Set below after import
         fields = [
             'id', 'title', 'notation', 'key', 'share_id',
             'is_public', 'created_at', 'updated_at',
-            'note_count', 'duration_seconds',
+            'note_count', 'duration_seconds', 'tabs',
         ]
         read_only_fields = ['id', 'share_id', 'created_at', 'updated_at', 'note_count', 'duration_seconds']
 
@@ -133,12 +144,13 @@ class SharedMelodySerializer(serializers.ModelSerializer):
     """Public-facing serializer for shared melodies (excludes private fields)."""
 
     author = serializers.SerializerMethodField()
+    tabs = MelodyTabSerializer(many=True, read_only=True)
 
     class Meta:
         model = None  # Set below after import
         fields = [
             'id', 'title', 'notation', 'key', 'share_id',
-            'created_at', 'note_count', 'duration_seconds', 'author',
+            'created_at', 'note_count', 'duration_seconds', 'author', 'tabs',
         ]
 
     def get_author(self, obj):
@@ -212,8 +224,9 @@ class SharedSetlistSerializer(serializers.ModelSerializer):
 
 # Deferred model assignment to avoid circular imports
 def _set_models():
-    from melodies.models import Melody
+    from melodies.models import Melody, MelodyTab
     from setlists.models import Setlist, SetlistEntry
+    MelodyTabSerializer.Meta.model = MelodyTab
     MelodySerializer.Meta.model = Melody
     SharedMelodySerializer.Meta.model = Melody
     SetlistEntrySerializer.Meta.model = SetlistEntry

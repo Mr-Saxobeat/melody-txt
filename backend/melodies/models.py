@@ -6,6 +6,21 @@ from django.db import models
 from .utils import is_valid_solfege_notation, generate_share_id
 
 
+INSTRUMENT_CHOICES = [
+    ('piano', 'Piano in C'),
+    ('saxophone', 'Saxophone in Eb'),
+    ('trumpet', 'Trumpet in Bb'),
+    ('trombone', 'Trombone in C'),
+]
+
+INSTRUMENT_OFFSETS = {
+    'piano': 0,
+    'saxophone': 9,
+    'trumpet': 2,
+    'trombone': 0,
+}
+
+
 class Melody(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
@@ -57,3 +72,31 @@ class Melody(models.Model):
         self.duration_seconds = self.note_count * 0.5
 
         super().save(*args, **kwargs)
+
+
+class MelodyTab(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    melody = models.ForeignKey(
+        Melody,
+        on_delete=models.CASCADE,
+        related_name='tabs',
+    )
+    instrument = models.CharField(max_length=20, choices=INSTRUMENT_CHOICES)
+    notation = models.TextField()
+    position = models.IntegerField(default=0)
+    suffix = models.CharField(max_length=50, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'melody_tabs'
+        ordering = ['position']
+        indexes = [
+            models.Index(fields=['melody', 'position']),
+            models.Index(fields=['melody', 'instrument']),
+        ]
+
+    def __str__(self):
+        label = dict(INSTRUMENT_CHOICES).get(self.instrument, self.instrument)
+        if self.suffix:
+            label = f"{label} - {self.suffix}"
+        return f"{self.melody.title} / {label}"
