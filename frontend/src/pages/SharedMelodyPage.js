@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import melodyService from '../services/melodyService';
 import setlistService from '../services/setlistService';
-import MelodyPlayer from '../components/MelodyPlayer';
+// import MelodyPlayer from '../components/MelodyPlayer';
 import { transposeNotes } from '../utils/transposer';
 import { classifyLines } from '../utils/validation';
 import '../components/TransposeControls.css';
@@ -78,7 +78,18 @@ function SharedMelodyPage() {
           <p className="melody-author">by {melody.author.username}</p>
         )}
 
-        {setlistEntries && (
+        <div style={{ fontSize: `${fontSize}rem`, fontWeight: 600, whiteSpace: 'pre-wrap', marginBottom: '12px' }}>
+          {classifyLines(notation).map((line, i, arr) => (
+            <span key={i}>
+              <span style={{ color: line.type === 'notes' ? '#2e7d32' : line.type === 'lyrics' ? '#e65100' : '#333' }}>
+                {line.text}
+              </span>
+              {i < arr.length - 1 ? '\n' : ''}
+            </span>
+          ))}
+        </div>
+
+                {setlistEntries && (
           <div style={{ marginBottom: '16px' }}>
             <select
               value={currentPos}
@@ -138,17 +149,9 @@ function SharedMelodyPage() {
             <button className="transpose-btn plus" onClick={() => setFontSize((s) => Math.min(3, +(s + 0.2).toFixed(1)))} aria-label="Increase font size">A+</button>
           </div>
         </div>
-        <div style={{ fontSize: `${fontSize}rem`, fontWeight: 600, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
-          {classifyLines(notation).map((line, i, arr) => (
-            <span key={i}>
-              <span style={{ color: line.type === 'notes' ? '#2e7d32' : line.type === 'lyrics' ? '#e65100' : '#333' }}>
-                {line.text}
-              </span>
-              {i < arr.length - 1 ? '\n' : ''}
-            </span>
-          ))}
-        </div>
-        <MelodyPlayer notation={notation} />
+
+        {/* <MelodyPlayer notation={notation} /> */}
+        
         {user && melody.author && user.username === melody.author.username && (
           <button
             className="btn-edit"

@@ -8,9 +8,9 @@ jest.mock('../services/melodyService');
 jest.mock('../hooks/useAuth', () => ({
   useAuth: () => ({ isAuthenticated: true, loading: false }),
 }));
-jest.mock('../components/MelodyPlayer', () => ({ notation }) => (
-  <div data-testid="melody-player">{notation}</div>
-));
+// jest.mock('../components/MelodyPlayer', () => ({ notation }) => (
+//   <div data-testid="melody-player">{notation}</div>
+// ));
 
 const mockMelodies = {
   count: 2,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MelodyComposer from '../components/MelodyComposer';
-import MelodyPlayer from '../components/MelodyPlayer';
+// import MelodyPlayer from '../components/MelodyPlayer';
 import TransposeControls from '../components/TransposeControls';
 import { useAuth } from '../hooks/useAuth';
 import melodyService from '../services/melodyService';
@@ -98,7 +98,7 @@ function ComposerPage() {
 
         <div className="composer-section">
           <label className="composer-label">Enter your melody (notes and lyrics):</label>
-          <MelodyPlayer notation={notation} disabled={!isValid || !notation} />
+          {/* <MelodyPlayer notation={notation} disabled={!isValid || !notation} /> */}
           <TransposeControls
             onTranspose={(semitones) => setNotation(transposeNotes(notation, semitones))}
             disabled={!notation}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import melodyService from '../services/melodyService';
-import MelodyPlayer from '../components/MelodyPlayer';
+// import MelodyPlayer from '../components/MelodyPlayer';
 import { copyToClipboard } from '../utils/clipboard';
 
 function MyMelodiesPage() {
@@ -81,7 +81,7 @@ function MyMelodiesPage() {
                 <span>{melody.duration_seconds}s</span>
                 <span>{new Date(melody.created_at).toLocaleDateString()}</span>
               </div>
-              <MelodyPlayer notation={melody.notation} />
+              {/* <MelodyPlayer notation={melody.notation} /> */}
               <div className="melody-actions">
                 <button
                   className="btn-share"
