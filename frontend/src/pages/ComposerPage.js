@@ -46,6 +46,15 @@ function ComposerPage() {
       navigate('/auth');
       return;
     }
+    if (!editingId && !title) {
+      const lines = notation.split('\n');
+      const firstLineIdx = lines.findIndex((line) => line.trim());
+      if (firstLineIdx >= 0) {
+        setTitle(lines[firstLineIdx].trim().slice(0, 200));
+        const remaining = [...lines.slice(0, firstLineIdx), ...lines.slice(firstLineIdx + 1)].join('\n').replace(/^\n+/, '');
+        setNotation(remaining);
+      }
+    }
     setShowSaveDialog(true);
     setSaveError(null);
   };

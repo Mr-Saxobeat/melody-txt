@@ -74,9 +74,6 @@ function SharedMelodyPage() {
     <div className="shared-melody-page">
       <div className="shared-melody-container">
         <h1>{melody.title}</h1>
-        {melody.author && (
-          <p className="melody-author">by {melody.author.username}</p>
-        )}
 
         <div style={{ fontSize: `${fontSize}rem`, fontWeight: 600, whiteSpace: 'pre-wrap', marginBottom: '12px' }}>
           {classifyLines(notation).map((line, i, arr) => (
@@ -88,6 +85,10 @@ function SharedMelodyPage() {
             </span>
           ))}
         </div>
+
+        {melody.author && (
+          <p className="melody-author">by {melody.author.username}</p>
+        )}
 
                 {setlistEntries && (
           <div style={{ marginBottom: '16px' }}>

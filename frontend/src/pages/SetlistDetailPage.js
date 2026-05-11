@@ -18,6 +18,9 @@ function SetlistDetailPage({ readOnly = false }) {
   const dragItem = useRef(null);
   const dragOverItem = useRef(null);
   const canDrag = useRef(false);
+  const touchDragging = useRef(false);
+  const [draggingIndex, setDraggingIndex] = useState(null);
+  const [overIndex, setOverIndex] = useState(null);
 
   const fetchSetlist = useCallback(async () => {
     try {
@@ -53,7 +56,6 @@ function SetlistDetailPage({ readOnly = false }) {
   const handleAddMelody = async (melodyId) => {
     const position = setlist.entries ? setlist.entries.length : 0;
     await setlistService.addEntry(id, melodyId, position);
-    setShowAddPicker(false);
     fetchSetlist();
   };
 
@@ -76,10 +78,12 @@ function SetlistDetailPage({ readOnly = false }) {
       return;
     }
     dragItem.current = index;
+    setDraggingIndex(index);
   };
 
   const handleDragEnter = (index) => {
     dragOverItem.current = index;
+    setOverIndex(index);
   };
 
   const handleDragEnd = async () => {
@@ -101,6 +105,53 @@ function SetlistDetailPage({ readOnly = false }) {
     dragItem.current = null;
     dragOverItem.current = null;
     canDrag.current = false;
+    setDraggingIndex(null);
+    setOverIndex(null);
+  };
+
+  const handleTouchStart = (index) => {
+    touchDragging.current = true;
+    dragItem.current = index;
+    setDraggingIndex(index);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchDragging.current) return;
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (element) {
+      const row = element.closest('[data-index]');
+      if (row) {
+        const idx = parseInt(row.dataset.index, 10);
+        dragOverItem.current = idx;
+        setOverIndex(idx);
+      }
+    }
+  };
+
+  const handleTouchEnd = async () => {
+    if (!touchDragging.current) return;
+    touchDragging.current = false;
+    setDraggingIndex(null);
+    setOverIndex(null);
+
+    if (dragItem.current === null || dragOverItem.current === null) return;
+    if (dragItem.current === dragOverItem.current) return;
+
+    const entries = [...setlist.entries];
+    const draggedEntry = entries[dragItem.current];
+    entries.splice(dragItem.current, 1);
+    entries.splice(dragOverItem.current, 0, draggedEntry);
+
+    const reordered = entries.map((entry, i) => ({ ...entry, position: i }));
+    setSetlist({ ...setlist, entries: reordered });
+
+    for (const entry of reordered) {
+      await setlistService.updateEntry(id, entry.id, entry.position);
+    }
+
+    dragItem.current = null;
+    dragOverItem.current = null;
   };
 
   const handleShare = () => {
@@ -186,29 +237,35 @@ function SetlistDetailPage({ readOnly = false }) {
           {setlist.entries.map((entry, index) => (
             <div
               key={entry.id}
+              data-index={index}
               draggable={!readOnly}
               onDragStart={!readOnly ? (e) => handleDragStart(e, index) : undefined}
               onDragEnter={!readOnly ? () => handleDragEnter(index) : undefined}
               onDragEnd={!readOnly ? handleDragEnd : undefined}
               onDragOver={!readOnly ? (e) => e.preventDefault() : undefined}
+              onTouchMove={!readOnly ? handleTouchMove : undefined}
+              onTouchEnd={!readOnly ? handleTouchEnd : undefined}
               onClick={() => navigate(`/shared/${entry.melody_share_id}?setlist=${readOnly ? shareId : setlist.share_id}&pos=${index}`)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 padding: '12px 16px',
-                background: 'white',
+                background: draggingIndex === index ? '#e3f2fd' : 'white',
                 borderRadius: '8px',
-                border: '1px solid #e0e0e0',
+                border: overIndex === index && draggingIndex !== null && draggingIndex !== index ? '2px solid #1976d2' : '1px solid #e0e0e0',
                 gap: '12px',
                 cursor: 'pointer',
+                opacity: draggingIndex === index ? 0.6 : 1,
+                transition: 'border 0.15s, opacity 0.15s, background 0.15s',
               }}
             >
               {!readOnly && (
                 <span
                   onMouseDown={(e) => { e.stopPropagation(); canDrag.current = true; }}
                   onMouseUp={() => { canDrag.current = false; }}
+                  onTouchStart={(e) => { e.stopPropagation(); handleTouchStart(index); }}
                   onClick={(e) => e.stopPropagation()}
-                  style={{ cursor: 'grab', fontSize: '1.2rem', color: '#999', userSelect: 'none' }}
+                  style={{ cursor: 'grab', fontSize: '1.2rem', color: '#999', userSelect: 'none', touchAction: 'none' }}
                   title="Drag to reorder"
                 >
                   &#x2630;

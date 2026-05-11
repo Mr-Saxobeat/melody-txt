@@ -55,7 +55,7 @@ function MyMelodiesPage() {
     <div className="my-melodies-page">
       <div className="page-header">
         <h1>My Melodies</h1>
-        <button className="btn-primary" onClick={() => navigate('/')}>
+        <button className="btn-primary" onClick={() => navigate('/compose')}>
           Compose New
         </button>
       </div>
