@@ -57,3 +57,49 @@
 **Decision**: Pass the selected instrument name via URL query param (e.g., `?instrument=saxophone`). When navigating to the next melody in a setlist, the SharedMelodyPage reads this param and auto-selects the matching tab. Falls back to first tab if no match.
 
 **Rationale**: Stateless (no server storage needed), works with browser back/forward, survives page refresh.
+
+## Decision 6: Auto-Creation of All 4 Instrument Tabs
+
+**Decision**: When a user creates a new melody, the system shows an instrument selection modal to pick the source instrument, then automatically creates one tab for each of the 4 fixed instruments (Piano, Saxophone, Trumpet, Trombone) in that fixed order, with notation transposed from the source.
+
+**Rationale**: Reduces friction — musicians typically need all parts ready for their ensemble. Creating all tabs upfront saves repeated manual "+" clicks.
+
+**Alternatives considered**:
+- Only create tabs for instruments already used in the setlist — requires tracking per-setlist instrument usage, adds complexity
+- User-configurable default instruments — over-engineering for v1 with only 4 instruments
+- No auto-creation (manual only via "+") — more friction, less useful for the target use case
+
+## Decision 7: Tab Deletion and Minimum Constraint
+
+**Decision**: Users can delete any instrument tab. The system enforces a minimum of 1 tab per melody — the delete button is hidden/disabled when only 1 tab remains.
+
+**Rationale**: Users who don't need all 4 instruments can clean up unwanted tabs. The 1-tab minimum prevents orphaned melodies with no viewable notation.
+
+**Alternatives considered**:
+- All 4 tabs always present, no deletion — too rigid, clutters UI for simpler use cases
+- Allow 0 tabs (melody with no tabs) — confusing UX, breaks the shared melody view
+
+## Decision 8: Tabs Independent After Creation
+
+**Decision**: Tabs are fully independent after auto-creation. Editing notation on one tab does not affect any other tab.
+
+**Rationale**: Already established in Decision 3. Confirmed during clarification — musicians need to customize individual parts independently (e.g., adding ornaments, adjusting for instrument range).
+
+## Decision 9: Source Instrument Selection Flow
+
+**Decision**: On new melody creation, the user first selects the source instrument via a modal/prompt before entering notation. The system then creates all 4 tabs in fixed order (Piano, Saxophone, Trumpet, Trombone).
+
+**Rationale**: The source instrument determines the transposition baseline. Asking upfront avoids having to retranspose after the fact. Default was Piano, but musicians often compose directly in their own instrument's key.
+
+**Alternatives considered**:
+- Default to Piano with no prompt — forces non-Piano players to mentally transpose or retranspose later
+- Ask after notation entry — wasteful, requires retransposing work already done
+
+## Decision 10: Existing Melodies Unchanged
+
+**Decision**: Existing melodies (pre-feature) keep their single "Piano in C" tab. Auto-creation only applies to newly created melodies. Users can manually add tabs to existing melodies via the "+" button.
+
+**Rationale**: Avoids disruptive migration. Users may not want all 4 tabs for every old melody. The "+" button provides an opt-in path for legacy content.
+
+**Alternatives considered**:
+- Retroactive migration to create all 4 tabs — could create thousands of unwanted tabs across all users' melodies

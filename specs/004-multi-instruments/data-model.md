@@ -34,6 +34,7 @@ A single instrument notation tab belonging to a melody.
 
 - instrument: required, must be one of the known instrument keys
 - Max 10 tabs per melody
+- Min 1 tab per melody (delete blocked when only 1 remains)
 - position: non-negative integer, unique within melody
 
 ### Indexes
@@ -75,3 +76,31 @@ Or equivalently:
 net_shift = target.offset - source.offset
 transposed_notation = transposeNotes(source_notation, net_shift)
 ```
+
+---
+
+## Auto-Creation Behavior
+
+### New Melody Flow
+
+When a melody is created:
+1. User selects source instrument via modal
+2. User enters notation in the source instrument's key
+3. System creates 4 tabs automatically in fixed order:
+   - Piano in C (position 0)
+   - Saxophone in Eb (position 1)
+   - Trumpet in Bb (position 2)
+   - Trombone in C (position 3)
+4. Each tab's notation = `transposeNotes(sourceNotation, target.offset - source.offset)`
+5. The source instrument's tab contains the original notation unchanged (net_shift = 0 when source == target)
+
+### Existing Melody Behavior
+
+Existing melodies retain their single "Piano in C" tab. No retroactive auto-creation. Users can add tabs manually via the "+" button.
+
+### Delete Constraint
+
+- Any tab can be deleted
+- Minimum 1 tab must remain per melody
+- Backend: `MelodyTabView.delete` returns 400 if deleting would leave 0 tabs
+- Frontend: `InstrumentTabs` hides delete button when `tabs.length <= 1` (already implemented)

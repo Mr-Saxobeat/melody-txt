@@ -17,10 +17,10 @@ An authenticated user wants to create multiple notation tabs for the same melody
 
 **Acceptance Scenarios**:
 
-1. **Given** an authenticated user on the compose page, **When** they click a "+" button above the melody input, **Then** a new instrument tab opens after the last one
-2. **Given** a new tab is open, **When** the user clicks on the tab name, **Then** a modal displays the available instruments (Piano in C, Saxophone in Eb, Trumpet in Bb, Trombone in C)
-3. **Given** the instrument modal is visible, **When** the user selects an instrument, **Then** the modal closes and the tab's notation is automatically transposed from the first tab's key to the selected instrument's key
-4. **Given** the instrument modal is visible, **When** the user selects an instrument, **Then** the tab is renamed with the instrument name
+1. **Given** an authenticated user on the compose page, **When** they create a new melody, **Then** an instrument selection prompt/modal appears asking for the source instrument
+2. **Given** the instrument selection modal is visible, **When** the user selects a source instrument and enters notation, **Then** all 4 instrument tabs are automatically created in fixed order (Piano, Saxophone, Trumpet, Trombone) with notation transposed from the source instrument
+3. **Given** all 4 tabs exist, **When** the user clicks a "+" button above the melody input, **Then** a new instrument tab opens after the last one (for adding duplicate instrument tabs with different suffixes)
+4. **Given** a tab exists, **When** the user clicks on the tab name, **Then** a modal displays the available instruments (Piano in C, Saxophone in Eb, Trumpet in Bb, Trombone in C) to change the instrument
 5. **Given** the user clicks on a tab's name, **When** the name editor opens, **Then** the instrument name prefix is not editable but the user can add a suffix (e.g., "Saxophone - João")
 6. **Given** a melody "do re mi" for "Piano in C", **When** the user adds a "Saxophone in Eb" tab, **Then** the new tab shows "la si do#" (transposed for Eb)
 7. **Given** a melody "do re mi" for "Piano in C", **When** the user adds a "Trumpet in Bb" tab, **Then** the new tab shows "re mi fa#" (transposed for Bb)
@@ -49,25 +49,30 @@ When a user uses the transpose controls on the compose or shared melody page, al
 - Can tabs be reordered? Not in v1 — tabs maintain creation order.
 - Maximum number of tabs per melody? 10 tabs.
 - What happens on the shared/view melody page? Tabs are displayed as read-only — user can switch between them to view each instrument's part.
+- What happens if the user tries to delete the last remaining tab? The delete action is disabled or hidden when only 1 tab remains.
+- What happens if the user dismisses the source instrument modal (clicks outside)? Modal closes, composer loads with no tabs and an empty input, "+" button is available for adding an instrument tab later.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
 - **FR-001**: Each melody MUST support multiple notation tabs, one per instrument
-- **FR-002**: The first tab defaults to "Piano in C" but the user can change any tab's instrument at any time (including the first tab)
+- **FR-002**: When creating a new melody, the user MUST first select the source instrument via a prompt/modal; the system then auto-creates all 4 instrument tabs in fixed order (Piano, Saxophone, Trumpet, Trombone) with the notation transposed from the selected source instrument. The user can change any tab's instrument at any time (including the first tab)
 - **FR-003**: A "+" button above the melody input MUST allow adding new instrument tabs
 - **FR-004**: Clicking a tab name MUST open an instrument selection modal
 - **FR-005**: Available instruments: Piano in C (0 semitones), Saxophone in Eb (-9 semitones), Trumpet in Bb (-2 semitones), Trombone in C (0 semitones)
 - **FR-006**: When a new tab is created, its notation MUST be automatically transposed from the source tab's instrument to the selected instrument (any-to-any transposition, not just from Piano)
 - **FR-006a**: Transposition between any two instruments is computed via concert pitch: convert source notation to concert pitch using source instrument's offset, then convert from concert pitch to target instrument's written pitch
-- **FR-007**: Tab names MUST show the instrument name; users can add a suffix but not edit the instrument prefix
+- **FR-007**: On the compose page, tab names MUST show only the instrument name without its pitch (e.g., "Saxophone", not "Saxophone in Eb"); users can add a suffix but not edit the instrument prefix. On the shared melody page, tab names MUST show the instrument name plus any custom suffix (e.g., "Saxophone - 1")
 - **FR-008**: Transpose controls MUST affect ALL tabs simultaneously
 - **FR-009**: Maximum 10 instrument tabs per melody
 - **FR-010**: On the shared/view melody page, tabs are displayed read-only — users can switch between them
 - **FR-010a**: When navigating between melodies in a setlist, the system MUST remember the user's selected tab by full label (instrument + suffix, e.g., "Trombone - 1") and auto-select the tab with the exact same full label on the next melody. If no exact match exists, fall back to first tab matching the same instrument. If no instrument match, fall back to the first available tab.
 - **FR-011**: Instruments are a fixed list (no CRUD) with name and semitone offset from Piano in C
 - **FR-012**: When validating or transposing a melody line, unrecognized symbols MUST be silently ignored (passed through unchanged); only valid solfege tokens are transposed. A line is never invalidated due to containing unrecognized symbols alongside valid notes.
+- **FR-013**: When a user creates a new melody for any instrument, the system MUST automatically create one tab for each of the 4 fixed instruments (Piano in C, Saxophone in Eb, Trumpet in Bb, Trombone in C), with each tab's notation auto-transposed from the source instrument
+- **FR-014**: Users MUST be able to delete any instrument tab, with the constraint that at least 1 tab must remain per melody
+- **FR-015**: When saving a new melody without a title, the system MUST pre-fill the title field with the first non-empty line of the source tab's notation, but MUST NOT remove that line from the notation
 
 ### Key Entities
 
@@ -93,6 +98,17 @@ When a user uses the transpose controls on the compose or shared melody page, al
 - Q: What happens to instrument tab selection when navigating setlist? → A: Matches by full label (instrument + suffix, e.g. "Trombone - 1"); falls back to same instrument without suffix match; then first tab
 - Q: How should invalid symbols on a melody line be handled? → A: Ignore invalid symbols and validate only the valid notes; never invalidate an entire line due to unrecognized symbols
 
+### Session 2026-05-13
+
+- Q: What does "auto-create tabs for each existing instrument" mean? → A: All 4 fixed instruments (Piano, Saxophone, Trumpet, Trombone) — always create a tab for each when a new melody is added
+- Q: Can users delete unwanted auto-created instrument tabs? → A: Yes, any tab can be deleted as long as at least 1 tab remains
+- Q: Do edits on one tab propagate to other tabs after auto-creation? → A: No, tabs are independent after initial creation — edits to one tab do not affect others
+- Q: How does the user specify the source instrument when creating a melody? → A: User picks the source instrument first via a prompt/modal, then all 4 tabs are created in fixed order
+- Q: Should existing melodies retroactively get all 4 instrument tabs? → A: No, keep existing melodies as-is with a single Piano tab; auto-creation only applies to newly created melodies
+- Q: Should the auto-title rule (extract first line as title) continue with the new multi-tab flow? → A: Keep auto-title as a pre-filled suggestion but do NOT remove the first line from the notation
+- Q: What happens when the user dismisses the source instrument modal? → A: Modal closes, composer loads normally with no tabs, the "+" button is available so the user can choose an instrument later
+- Q: How should tab names display on compose vs shared page? → A: Compose page shows instrument name only (e.g., "Saxophone"); shared page shows instrument name + suffix (e.g., "Saxophone - 1")
+
 ## Assumptions
 
 - The transposition offset for each instrument is fixed and hardcoded (no user-configurable offsets in v1)
@@ -102,4 +118,4 @@ When a user uses the transpose controls on the compose or shared melody page, al
 - Any tab can serve as the source for transposition — the system uses the source tab's instrument offset to compute the interval to the target instrument
 - Users can change the first tab's instrument (it is NOT locked to Piano)
 - Each tab stores its own notation text independently (transposition is computed once on creation, then the tab is editable independently)
-- Existing melodies (created before this feature) will have a single "Piano in C" tab containing their current notation
+- Existing melodies (created before this feature) will have a single "Piano in C" tab containing their current notation — no retroactive auto-creation of additional tabs; users can manually add tabs via the "+" button

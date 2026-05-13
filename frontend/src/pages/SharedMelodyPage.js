@@ -32,12 +32,12 @@ function SharedMelodyPage() {
   useEffect(() => {
     const findMatch = (tabList, query) => {
       if (!query) return 0;
-      const exactMatch = tabList.findIndex((t) => {
+      const labelMatch = tabList.findIndex((t) => {
         const inst = getInstrumentById(t.instrument);
         const label = t.suffix ? `${inst.name} - ${t.suffix}` : inst.name;
         return label.toLowerCase() === query.toLowerCase();
       });
-      if (exactMatch >= 0) return exactMatch;
+      if (labelMatch >= 0) return labelMatch;
       const instrumentMatch = tabList.findIndex((t) => t.instrument === query);
       if (instrumentMatch >= 0) return instrumentMatch;
       return 0;
@@ -87,7 +87,7 @@ function SharedMelodyPage() {
     setActiveTabIndex(index);
     const tab = tabs[index];
     const newParams = new URLSearchParams(searchParams);
-    newParams.set('instrument', tab.instrument);
+    newParams.set('instrument', getTabLabel(tab));
     setSearchParams(newParams, { replace: true });
   };
 
@@ -104,8 +104,8 @@ function SharedMelodyPage() {
     if (!setlistEntries || index < 0 || index >= setlistEntries.length) return;
     const entry = setlistEntries[index];
     const currentTab = tabs[activeTabIndex];
-    const instrumentQuery = currentTab ? currentTab.instrument : '';
-    navigate(`/shared/${entry.melody_share_id}?setlist=${setlistShareId}&pos=${index}&instrument=${instrumentQuery}`);
+    const instrumentQuery = currentTab ? getTabLabel(currentTab) : '';
+    navigate(`/shared/${entry.melody_share_id}?setlist=${setlistShareId}&pos=${index}&instrument=${encodeURIComponent(instrumentQuery)}`);
   };
 
   const activeTab = tabs[activeTabIndex];

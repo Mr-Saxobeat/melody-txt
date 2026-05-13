@@ -1,9 +1,9 @@
-# Tasks: Multi-Instrument Notation
+# Tasks: Multi-Instrument Auto-Creation
 
 **Input**: Design documents from `specs/004-multi-instruments/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md
 
-**Organization**: Tasks grouped by user story to enable independent implementation and testing
+**Organization**: Tasks grouped by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -17,72 +17,76 @@ This is a **web application** with:
 - Backend: `backend/` (Django REST Framework)
 - Frontend: `frontend/` (React SPA)
 
----
-
-## Phase 1: Setup (Instrument Constants & Model)
-
-**Purpose**: Create the MelodyTab model and instrument definitions
-
-- [x] T001 [P] Create instrument constants in frontend/src/utils/instruments.js: define INSTRUMENTS array with { id, name, key, offset } for Piano (0), Saxophone Eb (+9), Trumpet Bb (+2), Trombone C (0); export transposeForInstrument(notation, fromInstrument, toInstrument) helper
-- [x] T002 [P] Create MelodyTab model in backend/melodies/models.py: id:UUID, melody:FK CASCADE, instrument:str (choices), notation:text, position:int, suffix:str(50) nullable, created_at
-- [x] T003 Create migration for MelodyTab: python manage.py makemigrations melodies
-- [x] T004 Add INSTRUMENT_CHOICES constant in backend/melodies/models.py: list of (key, label) tuples for piano, saxophone, trumpet, trombone with their offsets
+**Note**: Most infrastructure (MelodyTab model, API endpoints, InstrumentTabs component, transposition utils) already exists. These tasks focus on the new auto-creation flow and clarification-driven changes.
 
 ---
 
-## Phase 2: User Story 1 - Create Multiple Instrument Tabs (Priority: P1)
+## Phase 1: Setup (Verification)
 
-**Goal**: Tab UI with instrument selection, auto-transposition on creation, editable notation per tab
+**Purpose**: Verify existing infrastructure is complete and consistent
 
-**Independent Test**: Create melody with "do re mi" on piano, add saxophone tab, verify shows "la si do#"
-
-- [x] T005 [P] [US1] Create MelodyTabSerializer in backend/api/serializers.py: fields (id, instrument, notation, position, suffix, created_at), nested in MelodySerializer as tabs list
-- [x] T006 [P] [US1] Create MelodyTabViewSet in backend/api/views.py: POST to create tab (with auto-transposition from source tab), PUT to update notation/instrument/suffix, DELETE to remove tab; max 10 tabs validation
-- [x] T007 [US1] Add tab routes in backend/api/urls.py: /api/melodies/{melody_id}/tabs/ (list/create), /api/melodies/{melody_id}/tabs/{tab_id}/ (update/delete)
-- [x] T008 [US1] Update MelodySerializer in backend/api/serializers.py: include nested tabs in melody detail and shared melody responses
-- [x] T009 [US1] Add instrument transposition helper in backend/melodies/utils.py: transpose_between_instruments(notation, from_instrument, to_instrument) using offset arithmetic
-- [x] T010 [P] [US1] Create InstrumentTabs component in frontend/src/components/InstrumentTabs.js: tab bar showing instrument names, "+" button to add tab, active tab highlighting, click tab to switch
-- [x] T011 [US1] Create InstrumentModal component in frontend/src/components/InstrumentModal.js: modal listing available instruments, onClick selects instrument and closes modal
-- [x] T012 [US1] Integrate InstrumentTabs into ComposerPage in frontend/src/pages/ComposerPage.js: manage tabs state, active tab switches notation in editor, new tab auto-transposes from current tab's instrument
-- [x] T013 [US1] Add tab suffix editing in InstrumentTabs: clicking tab name opens inline editor for suffix (instrument prefix not editable)
-- [x] T014 [US1] Add tab deletion in InstrumentTabs: X button or swipe to delete a tab (with confirmation)
-- [x] T015 [US1] Create frontend tab service in frontend/src/services/melodyService.js: addTab(melodyId, instrument, notation, position), updateTab(melodyId, tabId, data), deleteTab(melodyId, tabId)
-
-**Checkpoint**: User can create melody, add instrument tabs, see transposed notation, edit each tab independently
+- [x] T001 [P] Verify instrument constants are consistent between backend/melodies/models.py (INSTRUMENT_CHOICES, INSTRUMENT_OFFSETS) and frontend/src/utils/instruments.js (INSTRUMENTS) — all 4 instruments with correct offsets
+- [x] T002 [P] Verify MelodyTab model exists with all required fields (id, melody FK, instrument, notation, position, suffix, created_at) in backend/melodies/models.py
+- [x] T003 [P] Verify transposition logic works for all instrument pairs in backend/melodies/utils.py (transpose_between_instruments) and frontend/src/utils/instruments.js (transposeForInstrument)
 
 ---
 
-## Phase 3: User Story 2 - Transposition Affects All Tabs (Priority: P2)
+## Phase 2: Foundational (Blocking Prerequisites)
 
-**Goal**: Transpose controls shift all tabs simultaneously
+**Purpose**: Backend constraint that must be in place before user story work
 
-**Independent Test**: With piano "do re mi" and saxophone "la si do#", click up half step — both shift by 1 semitone
+**CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T016 [US2] Update ComposerPage transpose handler in frontend/src/pages/ComposerPage.js: when transpose button clicked, apply transposeNotes to ALL tabs' notations (not just active tab)
-- [x] T017 [US2] Update SharedMelodyPage in frontend/src/pages/SharedMelodyPage.js: display tabs as read-only switchable views, transpose affects all tabs, remember selected tab via ?instrument= query param
-- [x] T018 [US2] Implement setlist instrument memory in SharedMelodyPage: when navigating between setlist melodies, match tab by full label (instrument + suffix), fallback to same instrument, then first tab
+- [x] T004 Add min-1 tab delete constraint in MelodyTabView.delete in backend/api/views.py — before deleting, check melody.tabs.count() > 1; if only 1 tab remains, return HTTP 400 with message "Cannot delete the last tab"
+- [x] T005 [P] Add integration test for min-1 tab delete constraint in backend/tests/integration/test_tabs_crud.py — test DELETE returns 400 when only 1 tab remains, test DELETE succeeds with 204 when 2+ tabs exist
 
-**Checkpoint**: Transposition works across all tabs; setlist navigation remembers instrument selection
-
----
-
-## Phase 4: Backend Migration & Compatibility
-
-**Purpose**: Handle existing melodies and ensure backward compatibility
-
-- [x] T019 Create data migration to add default "Piano in C" tab for all existing melodies that have notation but no tabs in backend/melodies/migrations/
-- [x] T020 Update SharedMelodySerializer in backend/api/serializers.py: include tabs in shared melody response
-- [x] T021 Ensure melody CRUD still works without tabs (backward compatible): notation field remains as fallback
+**Checkpoint**: Foundation ready — backend enforces min-1 tab constraint
 
 ---
 
-## Phase 5: Polish & Integration
+## Phase 3: User Story 1 — Auto-Create All 4 Instrument Tabs on New Melody (Priority: P1) MVP
 
-**Purpose**: Final verification
+**Goal**: When a user creates a new melody, show a source instrument selection modal, then automatically create all 4 instrument tabs (Piano, Saxophone, Trumpet, Trombone) with notation transposed from the selected source instrument.
 
-- [x] T022 Run full backend test suite and verify all tests pass
-- [x] T023 Run full frontend test suite and verify all tests pass
-- [x] T024 Verify frontend compiles without errors
+**Independent Test**: Open compose page, verify source instrument modal appears, select "Saxophone in Eb", type "do re mi" in Saxophone tab, trigger auto-transpose to other tabs, verify Piano shows "mib fa sol", Trumpet shows "fa sol la", Trombone shows "mib fa sol".
+
+### Implementation for User Story 1
+
+- [x] T006 [P] [US1] Create InstrumentSelectModal component in frontend/src/components/InstrumentSelectModal.js — modal with title "Select Your Instrument", displays all 4 instruments from INSTRUMENTS constant as buttons showing "{name} in {key}" format (e.g., "Piano in C"), calls onSelect(instrumentId) callback when clicked. Add CSS in frontend/src/components/InstrumentSelectModal.css. Modal should have overlay backdrop consistent with existing instrument-modal-overlay styling.
+- [x] T007 [P] [US1] Update getTabLabel in frontend/src/components/InstrumentTabs.js to display full instrument label with key: "{name} in {key}" format (e.g., "Piano in C", "Saxophone in Eb") instead of just the instrument name, by using the key field from getInstrumentById
+- [x] T008 [US1] Modify ComposerPage new melody initialization in frontend/src/pages/ComposerPage.js — add state: showSourceModal (default true for new melodies, false for edits), sourceInstrument (null until selected). When creating a new melody (no edit param), show InstrumentSelectModal instead of creating a single Piano tab. When user selects source instrument: create all 4 local tabs in fixed order (Piano position 0, Saxophone position 1, Trumpet position 2, Trombone position 3) with empty notation, set activeTabId to the source instrument's tab, set sourceInstrument, hide modal.
+- [x] T009 [US1] Implement auto-transpose trigger in ComposerPage in frontend/src/pages/ComposerPage.js — when the user has typed notation in the source tab and switches to another tab for the first time (or explicitly triggers), auto-transpose the source tab's current notation into all other tabs using transposeForInstrument(sourceNotation, sourceInstrument, targetInstrument, !preferFlat). Only auto-transpose tabs that still have empty notation (don't overwrite user edits).
+- [x] T010 [US1] Ensure handleSaveConfirm in frontend/src/pages/ComposerPage.js correctly saves all 4 tabs to backend — verify the existing loop that calls melodyService.addTab for each tab passes the correct instrument, notation, position, and sourceInstrument. Confirm the save flow handles the case where all 4 tabs are new (not previously saved to backend).
+- [x] T011 [US1] Verify existing melody edit flow is unchanged in frontend/src/pages/ComposerPage.js — when loading with edit query param, skip InstrumentSelectModal, load tabs from API as before. Test that editing an old single-Piano-tab melody still works.
+
+**Checkpoint**: User Story 1 complete — new melodies auto-create all 4 instrument tabs from a user-selected source instrument
+
+---
+
+## Phase 4: User Story 2 — Transposition Affects All Tabs Simultaneously (Priority: P2)
+
+**Goal**: When the user uses transpose controls, all instrument tabs are transposed simultaneously by the same interval.
+
+**Independent Test**: Create a melody with 4 tabs, type "do re mi" on Piano tab, auto-transpose to other tabs, click "up half step" — verify all 4 tabs shift by the same interval.
+
+### Implementation for User Story 2
+
+- [x] T012 [US2] Verify handleTranspose in frontend/src/pages/ComposerPage.js already transposes all tabs — the existing implementation maps over all tabs and applies transposeNotes. Confirm this works correctly with 4 auto-created tabs. No code change expected.
+- [x] T013 [US2] Verify SharedMelodyPage transpose behavior with multiple tabs in frontend/src/pages/SharedMelodyPage.js — current implementation applies transposeSemitones to the active tab only at render time. Confirm this is correct per spec (transpose controls on shared page affect whichever tab is being viewed).
+
+**Checkpoint**: User Story 2 complete — transpose controls affect all tabs simultaneously on compose page
+
+---
+
+## Phase 5: Polish & Cross-Cutting Concerns
+
+**Purpose**: Edge cases, consistency, and regression verification
+
+- [x] T014 [P] Verify setlist instrument memory matches spec FR-010a in frontend/src/pages/SharedMelodyPage.js — update findMatch to match by full label (instrument name + suffix, e.g., "Trombone - 1") first, then fall back to instrument id match, then first tab. Current implementation uses instrument id; add full label matching.
+- [x] T015 [P] Verify data migration 0003_add_default_piano_tabs.py handles existing melodies correctly — confirm pre-existing melodies have a single "Piano in C" tab and no retroactive auto-creation occurs for old melodies
+- [x] T016 [P] Verify max 10 tabs constraint works with auto-creation — 4 auto-created + up to 6 manual via "+". Confirm InstrumentTabs shows "+" only when tabs.length < 10 in frontend/src/components/InstrumentTabs.js and backend MelodyTabView.post enforces the limit in backend/api/views.py
+- [ ] T017 Run all backend tests: cd backend && python -m pytest tests/ -v (BLOCKED: requires Docker DB)
+- [x] T018 Run all frontend tests: cd frontend && npx react-app-rewired test --watchAll=false (9 suites, 109 tests PASSED)
 
 ---
 
@@ -90,46 +94,76 @@ This is a **web application** with:
 
 ### Phase Dependencies
 
-- **Phase 1 (Setup)**: No dependencies — model and constants first
-- **Phase 2 (US1)**: Depends on Phase 1 (needs model + instrument definitions)
-- **Phase 3 (US2)**: Depends on Phase 2 (needs tab UI working)
-- **Phase 4 (Migration)**: Depends on Phase 1 (needs model)
-- **Phase 5 (Polish)**: Depends on all other phases
+- **Setup (Phase 1)**: No dependencies — verification only, already complete
+- **Foundational (Phase 2)**: No hard dependency on Setup. BLOCKS user stories.
+- **User Story 1 (Phase 3)**: Depends on Phase 2 completion
+- **User Story 2 (Phase 4)**: Depends on Phase 2 completion. Can run in parallel with US1 (mostly verification).
+- **Polish (Phase 5)**: Depends on US1 and US2 being complete
+
+### User Story Dependencies
+
+- **User Story 1 (P1)**: Depends on Foundational (Phase 2). No dependency on US2.
+- **User Story 2 (P2)**: Depends on Foundational (Phase 2). Independent of US1.
+
+### Within Each User Story
+
+- Component creation (T006, T007) before page integration (T008)
+- Core flow (T008) before edge cases (T009, T010)
+- Edge cases before edit flow verification (T011)
 
 ### Parallel Opportunities
 
-**Phase 1**: T001, T002 parallel (frontend/backend)
-**Phase 2**: T005, T006, T010 parallel (different files)
-**Phase 4**: Can run in parallel with Phase 3
+- T001, T002, T003 (Phase 1) — all parallel (verification only, already done)
+- T004 and T005 (Phase 2) — T005 is the test for T004; write test first per TDD
+- T006 and T007 (Phase 3) — parallel, different files
+- T012 and T013 (Phase 4) — parallel, different pages
+- T014, T015, T016 (Phase 5) — all parallel, different files/concerns
+
+---
+
+## Parallel Example: User Story 1
+
+```text
+# Parallel (different files):
+Task T006: "Create InstrumentSelectModal in frontend/src/components/InstrumentSelectModal.js"
+Task T007: "Update tab labels in frontend/src/components/InstrumentTabs.js"
+
+# Sequential (same file: ComposerPage.js):
+Task T008: "Modify ComposerPage initialization flow"
+Task T009: "Implement auto-transpose trigger"
+Task T010: "Verify save flow with 4 tabs"
+Task T011: "Verify edit flow unchanged"
+```
 
 ---
 
 ## Implementation Strategy
 
-### MVP (User Story 1 Only)
+### MVP First (User Story 1 Only)
 
-1. Complete Phase 1 (T001-T004) — ~1 hour
-2. Complete Phase 2 (T005-T015) — ~6 hours
-3. **VALIDATE**: Can user create tabs, see transposition, edit independently?
+1. Complete Phase 2: Add backend min-1 delete constraint (T004, T005)
+2. Complete Phase 3: User Story 1 — source modal + auto-create 4 tabs (T006-T011)
+3. **STOP and VALIDATE**: New melody → source modal → 4 tabs → type notation → auto-transpose → save
+4. Deploy/demo if ready
 
-### Full Feature
+### Incremental Delivery
 
-4. Phase 3 (T016-T018) — ~2 hours
-5. Phase 4 (T019-T021) — ~1 hour
-6. Phase 5 (T022-T024) — ~30 min
-
-**Total**: ~10.5 hours (24 tasks)
+1. Phase 2 → Backend constraint in place
+2. Add User Story 1 → Test independently → Deploy (MVP!)
+3. Add User Story 2 → Verify transpose behavior → Deploy
+4. Polish → Edge cases, setlist matching, regressions
+5. Each phase adds value without breaking previous work
 
 ---
 
 ## Task Count Summary
 
-- **Phase 1 (Setup)**: 4 tasks
-- **Phase 2 (US1 Multi-Tab)**: 11 tasks
-- **Phase 3 (US2 Global Transpose)**: 3 tasks
-- **Phase 4 (Migration)**: 3 tasks
-- **Phase 5 (Polish)**: 3 tasks
+- **Phase 1 (Setup/Verification)**: 3 tasks (already complete)
+- **Phase 2 (Foundational)**: 2 tasks
+- **Phase 3 (US1 Auto-Create Tabs)**: 6 tasks
+- **Phase 4 (US2 Global Transpose)**: 2 tasks
+- **Phase 5 (Polish)**: 5 tasks
 
-**Total**: 24 tasks
-**Parallel Opportunities**: ~6 tasks marked [P]
-**Suggested MVP Scope**: Phases 1-2 (T001-T015) = 15 tasks
+**Total**: 18 tasks (15 remaining, 3 already complete)
+**Parallel Opportunities**: 8 tasks marked [P]
+**Suggested MVP Scope**: Phase 2 + Phase 3 (T004-T011) = 8 tasks

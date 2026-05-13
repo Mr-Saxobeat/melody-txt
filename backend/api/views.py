@@ -191,6 +191,12 @@ class MelodyTabView(generics.GenericAPIView):
         if not tab:
             return Response({'detail': 'Tab not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+        if melody.tabs.count() <= 1:
+            return Response(
+                {'detail': 'Cannot delete the last tab.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         tab.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

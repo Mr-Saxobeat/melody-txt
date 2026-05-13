@@ -25,8 +25,7 @@ function InstrumentTabs({ tabs, activeTabId, onTabSelect, onAddTab, onDeleteTab,
 
   const getTabLabel = (tab) => {
     const instrument = getInstrumentById(tab.instrument);
-    const name = instrument.name;
-    return tab.suffix ? `${name} - ${tab.suffix}` : name;
+    return tab.suffix ? `${instrument.name} - ${tab.suffix}` : instrument.name;
   };
 
   const handleAddClick = () => {

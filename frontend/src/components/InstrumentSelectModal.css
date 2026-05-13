@@ -1,0 +1,51 @@
+.source-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.source-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 280px;
+  max-width: 90vw;
+}
+
+.source-modal h3 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.source-modal-hint {
+  margin: 0 0 16px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.source-instrument-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.source-instrument-option {
+  padding: 14px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.source-instrument-option:hover {
+  background: #e3f2fd;
+  border-color: #1976d2;
+}

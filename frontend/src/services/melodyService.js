@@ -42,13 +42,15 @@ const melodyService = {
     return response.data;
   },
 
-  async addTab(melodyId, instrument, notation, position, sourceInstrument = 'piano') {
-    const response = await api.post(`/melodies/${melodyId}/tabs/`, {
+  async addTab(melodyId, instrument, notation, position, sourceInstrument = 'piano', suffix = null) {
+    const data = {
       instrument,
       notation,
       position,
       source_instrument: sourceInstrument,
-    });
+    };
+    if (suffix) data.suffix = suffix;
+    const response = await api.post(`/melodies/${melodyId}/tabs/`, data);
     return response.data;
   },
 
