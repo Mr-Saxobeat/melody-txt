@@ -1,6 +1,9 @@
 import React from 'react';
+import useTranslation from '../i18n/useTranslation';
 
 function FlatToggle({ preferFlat, onToggle }) {
+  const { t } = useTranslation();
+
   return (
     <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600, color: '#555', cursor: 'pointer', userSelect: 'none' }}>
       <input
@@ -9,7 +12,7 @@ function FlatToggle({ preferFlat, onToggle }) {
         onChange={(e) => onToggle(e.target.checked)}
         style={{ width: '16px', height: '16px', cursor: 'pointer' }}
       />
-      View flat notes (b)
+      {t('flat.label')}
     </label>
   );
 }

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import useTranslation from '../i18n/useTranslation';
 
 function HomePage() {
   const [melodies, setMelodies] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchRecent = async () => {
@@ -15,7 +17,6 @@ function HomePage() {
         const response = await api.get('/melodies/recent/');
         setMelodies(response.data.results || response.data);
       } catch (err) {
-        // fallback empty
       } finally {
         setLoading(false);
       }
@@ -23,22 +24,22 @@ function HomePage() {
     fetchRecent();
   }, []);
 
-  if (loading) return <div className="page-loading">Loading...</div>;
+  if (loading) return <div className="page-loading">{t('home.loading')}</div>;
 
   return (
     <div className="my-melodies-page">
       <div className="page-header">
-        <h1>Recent Melodies</h1>
+        <h1>{t('home.title')}</h1>
         {isAuthenticated && (
           <button className="btn-primary" onClick={() => navigate('/compose')}>
-            Compose New
+            {t('home.composeNew')}
           </button>
         )}
       </div>
 
       {melodies.length === 0 ? (
         <div className="empty-state">
-          <p>No melodies yet. Be the first to compose one!</p>
+          <p>{t('home.empty')}</p>
         </div>
       ) : (
         <div className="melody-grid">
@@ -53,8 +54,8 @@ function HomePage() {
                 <h3>{melody.title}</h3>
               </div>
               <div className="melody-meta">
-                <span>by {melody.author?.username || 'anonymous'}</span>
-                <span>{new Date(melody.created_at).toLocaleDateString()}</span>
+                <span>{t('home.by', { name: melody.author?.username || 'anonymous' })}</span>
+                <span>{new Date(melody.created_at).toLocaleDateString('pt-BR')}</span>
               </div>
             </div>
           ))}

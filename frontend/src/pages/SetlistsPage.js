@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import setlistService from '../services/setlistService';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import useTranslation from '../i18n/useTranslation';
 
 function SetlistsPage({ mode = 'mine' }) {
   const [setlists, setSetlists] = useState([]);
@@ -11,6 +12,7 @@ function SetlistsPage({ mode = 'mine' }) {
   const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const fetchSetlists = useCallback(async () => {
     try {
@@ -46,12 +48,12 @@ function SetlistsPage({ mode = 'mine' }) {
 
   const isOwner = (setlist) => user && setlist.author && setlist.author.username === user.username;
 
-  if (loading) return <div className="page-loading">Loading setlists...</div>;
+  if (loading) return <div className="page-loading">{t('setlists.loading')}</div>;
 
   return (
     <div className="my-melodies-page">
       <div className="page-header">
-        <h1>{mode === 'mine' ? 'My Setlists' : 'Setlists'}</h1>
+        <h1>{mode === 'mine' ? t('setlists.myTitle') : t('setlists.title')}</h1>
       </div>
 
       {mode === 'mine' && (
@@ -60,19 +62,19 @@ function SetlistsPage({ mode = 'mine' }) {
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="New setlist title..."
+            placeholder={t('setlists.newPlaceholder')}
             style={{ flex: 1, padding: '10px 12px', borderRadius: '8px', border: '2px solid #e0e0e0', fontSize: '1rem' }}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
           />
           <button className="btn-primary" onClick={handleCreate} disabled={creating || !newTitle.trim()}>
-            {creating ? 'Creating...' : 'Create'}
+            {creating ? t('setlists.creating') : t('setlists.create')}
           </button>
         </div>
       )}
 
       {setlists.length === 0 ? (
         <div className="empty-state">
-          <p>{mode === 'mine' ? "You haven't created any setlists yet." : 'No public setlists yet.'}</p>
+          <p>{mode === 'mine' ? t('setlists.emptyMine') : t('setlists.emptyPublic')}</p>
         </div>
       ) : (
         <div className="melody-grid">
@@ -93,17 +95,17 @@ function SetlistsPage({ mode = 'mine' }) {
                 <h3>{setlist.title}</h3>
               </div>
               <div className="melody-meta">
-                {setlist.author && <span>by {setlist.author.username}</span>}
-                <span>{setlist.entry_count} melodies</span>
-                <span>{new Date(setlist.created_at).toLocaleDateString()}</span>
+                {setlist.author && <span>{t('setlists.by', { name: setlist.author.username })}</span>}
+                <span>{t('setlists.melodyCount', { count: setlist.entry_count })}</span>
+                <span>{new Date(setlist.created_at).toLocaleDateString('pt-BR')}</span>
               </div>
               {isOwner(setlist) && (
                 <div className="melody-actions" onClick={(e) => e.stopPropagation()}>
                   <button className="btn-edit" onClick={() => navigate(`/setlists/${setlist.id}`)}>
-                    Edit
+                    {t('setlists.edit')}
                   </button>
                   <button className="btn-danger" onClick={() => handleDelete(setlist.id)}>
-                    Delete
+                    {t('setlists.delete')}
                   </button>
                 </div>
               )}

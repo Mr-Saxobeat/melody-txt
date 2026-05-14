@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import useTranslation from '../i18n/useTranslation';
 
 function AuthPage() {
   const [activeTab, setActiveTab] = useState('login');
@@ -13,6 +14,7 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login, register } = useAuth();
+  const { t } = useTranslation();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -57,20 +59,20 @@ function AuthPage() {
             className={`auth-tab ${activeTab === 'login' ? 'active' : ''}`}
             onClick={() => { setActiveTab('login'); setErrors({}); }}
           >
-            Login
+            {t('auth.loginTab')}
           </button>
           <button
             className={`auth-tab ${activeTab === 'register' ? 'active' : ''}`}
             onClick={() => { setActiveTab('register'); setErrors({}); }}
           >
-            Register
+            {t('auth.registerTab')}
           </button>
         </div>
 
         {activeTab === 'login' ? (
           <form onSubmit={handleLogin} className="auth-form">
             <div className="form-group">
-              <label htmlFor="login-username">Username</label>
+              <label htmlFor="login-username">{t('auth.username')}</label>
               <input
                 id="login-username"
                 type="text"
@@ -82,7 +84,7 @@ function AuthPage() {
               {errors.username && <span className="field-error">{errors.username}</span>}
             </div>
             <div className="form-group">
-              <label htmlFor="login-password">Password</label>
+              <label htmlFor="login-password">{t('auth.password')}</label>
               <input
                 id="login-password"
                 type="password"
@@ -95,13 +97,13 @@ function AuthPage() {
             </div>
             {errors.detail && <p className="form-error">{errors.detail}</p>}
             <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? t('auth.loggingIn') : t('auth.loginButton')}
             </button>
           </form>
         ) : (
           <form onSubmit={handleRegister} className="auth-form">
             <div className="form-group">
-              <label htmlFor="register-username">Username</label>
+              <label htmlFor="register-username">{t('auth.username')}</label>
               <input
                 id="register-username"
                 type="text"
@@ -114,7 +116,7 @@ function AuthPage() {
               {errors.username && <span className="field-error">{errors.username}</span>}
             </div>
             <div className="form-group">
-              <label htmlFor="register-email">Email</label>
+              <label htmlFor="register-email">{t('auth.email')}</label>
               <input
                 id="register-email"
                 type="email"
@@ -126,7 +128,7 @@ function AuthPage() {
               {errors.email && <span className="field-error">{errors.email}</span>}
             </div>
             <div className="form-group">
-              <label htmlFor="register-password">Password</label>
+              <label htmlFor="register-password">{t('auth.password')}</label>
               <input
                 id="register-password"
                 type="password"
@@ -140,7 +142,7 @@ function AuthPage() {
             </div>
             {errors.detail && <p className="form-error">{errors.detail}</p>}
             <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? 'Creating account...' : 'Register'}
+              {loading ? t('auth.creatingAccount') : t('auth.registerButton')}
             </button>
           </form>
         )}

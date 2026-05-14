@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { INSTRUMENTS, getInstrumentById } from '../utils/instruments';
+import useTranslation from '../i18n/useTranslation';
 import './InstrumentTabs.css';
 
 function InstrumentTabs({ tabs, activeTabId, onTabSelect, onAddTab, onDeleteTab, onSuffixChange }) {
   const [editingSuffix, setEditingSuffix] = useState(null);
   const [suffixValue, setSuffixValue] = useState('');
   const [showInstrumentModal, setShowInstrumentModal] = useState(false);
+  const { t } = useTranslation();
 
   const handleSuffixClick = (tab, e) => {
     e.stopPropagation();
@@ -24,8 +26,8 @@ function InstrumentTabs({ tabs, activeTabId, onTabSelect, onAddTab, onDeleteTab,
   };
 
   const getTabLabel = (tab) => {
-    const instrument = getInstrumentById(tab.instrument);
-    return tab.suffix ? `${instrument.name} - ${tab.suffix}` : instrument.name;
+    const name = t(`instrument.${tab.instrument}`);
+    return tab.suffix ? `${name} - ${tab.suffix}` : name;
   };
 
   const handleAddClick = () => {
@@ -123,7 +125,7 @@ function InstrumentTabs({ tabs, activeTabId, onTabSelect, onAddTab, onDeleteTab,
       {showInstrumentModal && (
         <div className="instrument-modal-overlay" onClick={() => setShowInstrumentModal(false)}>
           <div className="instrument-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Select Instrument</h3>
+            <h3>{t('instrument.selectInstrument')}</h3>
             <div className="instrument-list">
               {INSTRUMENTS.map((inst) => (
                 <button
@@ -131,12 +133,12 @@ function InstrumentTabs({ tabs, activeTabId, onTabSelect, onAddTab, onDeleteTab,
                   className="instrument-option"
                   onClick={() => handleInstrumentSelect(inst.id)}
                 >
-                  {inst.name} in {inst.key}
+                  {t(`instrument.${inst.id}`)} in {inst.key}
                 </button>
               ))}
             </div>
             <button className="btn-cancel" onClick={() => setShowInstrumentModal(false)}>
-              Cancel
+              {t('instrument.cancel')}
             </button>
           </div>
         </div>

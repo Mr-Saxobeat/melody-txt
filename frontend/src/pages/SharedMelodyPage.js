@@ -9,12 +9,14 @@ import { getInstrumentById } from '../utils/instruments';
 import FlatToggle from '../components/FlatToggle';
 import '../components/TransposeControls.css';
 import { useAuth } from '../hooks/useAuth';
+import useTranslation from '../i18n/useTranslation';
 
 function SharedMelodyPage() {
   const { shareId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [melody, setMelody] = useState(null);
   const [tabs, setTabs] = useState([]);
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -57,8 +59,8 @@ function SharedMelodyPage() {
         setTransposeSemitones(0);
       } catch (err) {
         setError(err.response?.status === 404
-          ? 'This melody was not found or is no longer public.'
-          : 'Failed to load melody.');
+          ? t('shared.notFoundMessage')
+          : t('shared.loadFailed'));
       } finally {
         setLoading(false);
       }
@@ -79,8 +81,8 @@ function SharedMelodyPage() {
   }, [setlistShareId]);
 
   const getTabLabel = (tab) => {
-    const instrument = getInstrumentById(tab.instrument);
-    return tab.suffix ? `${instrument.name} - ${tab.suffix}` : instrument.name;
+    const name = t(`instrument.${tab.instrument}`);
+    return tab.suffix ? `${name} - ${tab.suffix}` : name;
   };
 
   const handleTabSwitch = (index) => {
@@ -114,13 +116,13 @@ function SharedMelodyPage() {
     : '';
   const displayNotation = preferFlat ? convertAccidentals(rawNotation, false) : rawNotation;
 
-  if (loading) return <div className="page-loading">Loading shared melody...</div>;
+  if (loading) return <div className="page-loading">{t('shared.loading')}</div>;
 
   if (error) {
     return (
       <div className="shared-melody-page">
         <div className="error-state">
-          <h2>Melody Not Found</h2>
+          <h2>{t('shared.notFound')}</h2>
           <p>{error}</p>
         </div>
       </div>
@@ -173,7 +175,7 @@ function SharedMelodyPage() {
         </div>
 
         {melody.author && (
-          <p className="melody-author">by {melody.author.username}</p>
+          <p className="melody-author">{t('shared.by', { name: melody.author.username })}</p>
         )}
 
         {setlistEntries && (
@@ -218,22 +220,22 @@ function SharedMelodyPage() {
           <div className="transpose-controls" style={{ marginBottom: 0 }}>
             <div className="transpose-group">
               <button className="transpose-btn minus" onClick={() => handleTranspose(-1)} disabled={!displayNotation} aria-label="Down half step">-</button>
-              <span className="transpose-label">half</span>
+              <span className="transpose-label">{t('transpose.halfStep')}</span>
               <button className="transpose-btn plus" onClick={() => handleTranspose(1)} disabled={!displayNotation} aria-label="Up half step">+</button>
             </div>
             <div className="transpose-group">
               <button className="transpose-btn minus" onClick={() => handleTranspose(-2)} disabled={!displayNotation} aria-label="Down whole step">-</button>
-              <span className="transpose-label">whole</span>
+              <span className="transpose-label">{t('transpose.wholeStep')}</span>
               <button className="transpose-btn plus" onClick={() => handleTranspose(2)} disabled={!displayNotation} aria-label="Up whole step">+</button>
             </div>
             <div className="transpose-group">
               <button className="transpose-btn minus" onClick={() => handleTranspose(-12)} disabled={!displayNotation} aria-label="Down octave">-</button>
-              <span className="transpose-label">octave</span>
+              <span className="transpose-label">{t('transpose.octave')}</span>
               <button className="transpose-btn plus" onClick={() => handleTranspose(12)} disabled={!displayNotation} aria-label="Up octave">+</button>
             </div>
             <div className="transpose-group">
               <button className="transpose-btn minus" onClick={() => setFontSize((s) => Math.max(0.7, +(s - 0.2).toFixed(1)))} aria-label="Decrease font size">A-</button>
-              <span className="transpose-label">font</span>
+              <span className="transpose-label">{t('transpose.font')}</span>
               <button className="transpose-btn plus" onClick={() => setFontSize((s) => Math.min(3, +(s + 0.2).toFixed(1)))} aria-label="Increase font size">A+</button>
             </div>
           </div>
@@ -244,7 +246,7 @@ function SharedMelodyPage() {
             className="btn-reset-transpose"
             onClick={() => setTransposeSemitones(0)}
           >
-            Reset
+            {t('shared.reset')}
           </button>
         )}
 
@@ -256,7 +258,7 @@ function SharedMelodyPage() {
             onClick={() => navigate(`/compose?edit=${melody.id}`)}
             style={{ marginTop: '16px' }}
           >
-            Edit Melody
+            {t('shared.editMelody')}
           </button>
         )}
       </div>

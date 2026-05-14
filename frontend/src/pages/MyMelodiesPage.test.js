@@ -8,9 +8,6 @@ jest.mock('../services/melodyService');
 jest.mock('../hooks/useAuth', () => ({
   useAuth: () => ({ isAuthenticated: true, loading: false }),
 }));
-// jest.mock('../components/MelodyPlayer', () => ({ notation }) => (
-//   <div data-testid="melody-player">{notation}</div>
-// ));
 
 const mockMelodies = {
   count: 2,
@@ -64,7 +61,7 @@ describe('MyMelodiesPage', () => {
     melodyService.getUserMelodies.mockResolvedValue({ count: 0, results: [] });
     renderPage();
     await waitFor(() => {
-      expect(screen.getByText(/haven't saved any melodies/i)).toBeInTheDocument();
+      expect(screen.getByText(/nenhuma melodia/i)).toBeInTheDocument();
     });
   });
 
@@ -74,12 +71,12 @@ describe('MyMelodiesPage', () => {
       expect(screen.getByText('Song One')).toBeInTheDocument();
     });
 
-    const deleteButtons = screen.getAllByText('Delete');
+    const deleteButtons = screen.getAllByText('Excluir');
     fireEvent.click(deleteButtons[0]);
 
-    expect(screen.getByText('Delete?')).toBeInTheDocument();
-    expect(screen.getByText('Yes')).toBeInTheDocument();
-    expect(screen.getByText('No')).toBeInTheDocument();
+    expect(screen.getByText('Excluir?')).toBeInTheDocument();
+    expect(screen.getByText('Sim')).toBeInTheDocument();
+    expect(screen.getByText('Não')).toBeInTheDocument();
   });
 
   test('deletes melody on confirm', async () => {
@@ -89,9 +86,9 @@ describe('MyMelodiesPage', () => {
       expect(screen.getByText('Song One')).toBeInTheDocument();
     });
 
-    const deleteButtons = screen.getAllByText('Delete');
+    const deleteButtons = screen.getAllByText('Excluir');
     fireEvent.click(deleteButtons[0]);
-    fireEvent.click(screen.getByText('Yes'));
+    fireEvent.click(screen.getByText('Sim'));
 
     await waitFor(() => {
       expect(melodyService.deleteMelody).toHaveBeenCalledWith('uuid-1');
@@ -105,11 +102,11 @@ describe('MyMelodiesPage', () => {
       expect(screen.getByText('Song One')).toBeInTheDocument();
     });
 
-    const deleteButtons = screen.getAllByText('Delete');
+    const deleteButtons = screen.getAllByText('Excluir');
     fireEvent.click(deleteButtons[0]);
-    fireEvent.click(screen.getByText('No'));
+    fireEvent.click(screen.getByText('Não'));
 
-    expect(screen.queryByText('Delete?')).not.toBeInTheDocument();
+    expect(screen.queryByText('Excluir?')).not.toBeInTheDocument();
     expect(screen.getByText('Song One')).toBeInTheDocument();
   });
 });

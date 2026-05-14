@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import melodyService from '../services/melodyService';
-// import MelodyPlayer from '../components/MelodyPlayer';
 import { copyToClipboard } from '../utils/clipboard';
+import useTranslation from '../i18n/useTranslation';
 
 function MyMelodiesPage() {
   const [melodies, setMelodies] = useState([]);
@@ -11,6 +11,7 @@ function MyMelodiesPage() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [copySuccess, setCopySuccess] = useState(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const fetchMelodies = useCallback(async () => {
     try {
@@ -19,10 +20,11 @@ function MyMelodiesPage() {
       setMelodies(data.results);
       setError(null);
     } catch (err) {
-      setError('Failed to load melodies.');
+      setError(t('melodies.loadFailed'));
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ function MyMelodiesPage() {
       setMelodies(melodies.filter((m) => m.id !== id));
       setDeleteConfirm(null);
     } catch (err) {
-      setError('Failed to delete melody.');
+      setError(t('melodies.deleteFailed'));
     }
   };
 
@@ -48,15 +50,15 @@ function MyMelodiesPage() {
   };
 
   if (loading) {
-    return <div className="page-loading">Loading your melodies...</div>;
+    return <div className="page-loading">{t('melodies.loading')}</div>;
   }
 
   return (
     <div className="my-melodies-page">
       <div className="page-header">
-        <h1>My Melodies</h1>
+        <h1>{t('melodies.title')}</h1>
         <button className="btn-primary" onClick={() => navigate('/compose')}>
-          Compose New
+          {t('melodies.composeNew')}
         </button>
       </div>
 
@@ -64,9 +66,9 @@ function MyMelodiesPage() {
 
       {melodies.length === 0 ? (
         <div className="empty-state">
-          <p>You haven't saved any melodies yet.</p>
+          <p>{t('melodies.empty')}</p>
           <button className="btn-primary" onClick={() => navigate('/')}>
-            Create your first melody
+            {t('melodies.createFirst')}
           </button>
         </div>
       ) : (
@@ -77,38 +79,37 @@ function MyMelodiesPage() {
                 <h3>{melody.title}</h3>
               </div>
               <div className="melody-meta">
-                <span>{melody.note_count} notes</span>
+                <span>{melody.note_count} {t('melodies.notes', { count: melody.note_count }).replace(`${melody.note_count} `, '')}</span>
                 <span>{melody.duration_seconds}s</span>
-                <span>{new Date(melody.created_at).toLocaleDateString()}</span>
+                <span>{new Date(melody.created_at).toLocaleDateString('pt-BR')}</span>
               </div>
-              {/* <MelodyPlayer notation={melody.notation} /> */}
               <div className="melody-actions" onClick={(e) => e.stopPropagation()}>
                 <button
                   className="btn-share"
                   onClick={() => handleShare(melody)}
                 >
-                  {copySuccess === melody.id ? 'Link copied!' : 'Share'}
+                  {copySuccess === melody.id ? t('melodies.linkCopied') : t('melodies.share')}
                 </button>
                 <button
                   className="btn-edit"
                   onClick={() => navigate(`/shared/${melody.share_id}`)}
                 >
-                  Edit
+                  {t('melodies.edit')}
                 </button>
                 {deleteConfirm === melody.id ? (
                   <div className="delete-confirm">
-                    <span>Delete?</span>
+                    <span>{t('melodies.deleteConfirm')}</span>
                     <button
                       className="btn-danger"
                       onClick={() => handleDelete(melody.id)}
                     >
-                      Yes
+                      {t('melodies.yes')}
                     </button>
                     <button
                       className="btn-secondary"
                       onClick={() => setDeleteConfirm(null)}
                     >
-                      No
+                      {t('melodies.no')}
                     </button>
                   </div>
                 ) : (
@@ -116,7 +117,7 @@ function MyMelodiesPage() {
                     className="btn-danger"
                     onClick={() => setDeleteConfirm(melody.id)}
                   >
-                    Delete
+                    {t('melodies.delete')}
                   </button>
                 )}
               </div>

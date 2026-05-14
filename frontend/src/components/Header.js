@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import useTranslation from '../i18n/useTranslation';
 
 function Header({ siteTitle = 'Melody Txt' }) {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -29,18 +31,18 @@ function Header({ siteTitle = 'Melody Txt' }) {
           <span className={`hamburger-icon ${menuOpen ? 'open' : ''}`} />
         </button>
         <nav className={`header-nav ${menuOpen ? 'nav-open' : ''}`}>
-          <Link to="/setlists" className="nav-link" onClick={closeMenu}>Setlists</Link>
-          <Link to="/compose" className="nav-link" onClick={closeMenu}>{isAuthenticated && user ? user.username : 'Compose'}</Link>
+          <Link to="/setlists" className="nav-link" onClick={closeMenu}>{t('nav.setlists')}</Link>
+          <Link to="/compose" className="nav-link" onClick={closeMenu}>{isAuthenticated && user ? user.username : t('nav.compose')}</Link>
           {isAuthenticated ? (
             <>
-              <Link to="/my-melodies" className="nav-link" onClick={closeMenu}>My Melodies</Link>
-              <Link to="/my-setlists" className="nav-link" onClick={closeMenu}>My Setlists</Link>
+              <Link to="/my-melodies" className="nav-link" onClick={closeMenu}>{t('nav.myMelodies')}</Link>
+              <Link to="/my-setlists" className="nav-link" onClick={closeMenu}>{t('nav.mySetlists')}</Link>
               <button className="nav-link nav-button" onClick={handleLogout}>
-                Logout
+                {t('nav.logout')}
               </button>
             </>
           ) : (
-            <Link to="/auth" className="nav-link" onClick={closeMenu}>Login</Link>
+            <Link to="/auth" className="nav-link" onClick={closeMenu}>{t('nav.login')}</Link>
           )}
         </nav>
       </div>

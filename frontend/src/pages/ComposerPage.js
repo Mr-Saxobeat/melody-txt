@@ -10,9 +10,11 @@ import { useAuth } from '../hooks/useAuth';
 import melodyService from '../services/melodyService';
 import { transposeNotes } from '../utils/transposer';
 import { INSTRUMENTS, transposeForInstrument } from '../utils/instruments';
+import useTranslation from '../i18n/useTranslation';
 import './ComposerPage.css';
 
 function ComposerPage() {
+  const { t } = useTranslation();
   const [tabs, setTabs] = useState([]);
   const [activeTabId, setActiveTabId] = useState(null);
   const [isValid, setIsValid] = useState(true);
@@ -176,7 +178,7 @@ function ComposerPage() {
 
   const handleSaveConfirm = async () => {
     if (!title.trim()) {
-      setSaveError('Please enter a title.');
+      setSaveError(t('compose.titleRequired'));
       return;
     }
 
@@ -238,7 +240,7 @@ function ComposerPage() {
       setSaveSuccess(true);
     } catch (err) {
       setSaving(false);
-      setSaveError(err.response?.data?.detail || 'Failed to save melody.');
+      setSaveError(err.response?.data?.detail || t('compose.saveFailed'));
     }
   };
 
@@ -249,23 +251,23 @@ function ComposerPage() {
       )}
       <div className="composer-container">
         <header className="page-header">
-          <h1>Compose Your Melody</h1>
+          <h1>{t('compose.title')}</h1>
           <div className="info-section">
-            <h3>How to use:</h3>
+            <h3>{t('compose.howToUse')}</h3>
             <ul>
-              <li>Type solfege syllables: <strong>do</strong>, <strong>re</strong>, <strong>mi</strong>, <strong>fa</strong>, <strong>sol</strong>, <strong>la</strong>, <strong>si</strong></li>
-              <li>Add accidentals with <strong>#</strong> (sharp) or <strong>b</strong> (flat): do#, reb, fa#</li>
-              <li>Change octave: <strong>UPPERCASE</strong> = octave up, <strong>lowercase + number</strong> = octave down (DO = C5, do1 = C3)</li>
-              <li>Lines with non-note text are treated as <strong>lyrics</strong> (highlighted in orange)</li>
-              <li>Symbols like <strong>|</strong>, <strong>:</strong>, <strong>-</strong>, <strong>(</strong>, <strong>)</strong> and numbers are ignored in note lines</li>
-              <li>Use transpose buttons to shift all notes up or down</li>
-              <li>Add instrument tabs with <strong>+</strong> to see transposed notation for different instruments</li>
+              <li>{t('compose.instructSolfege')}</li>
+              <li>{t('compose.instructAccidentals')}</li>
+              <li>{t('compose.instructOctave')}</li>
+              <li>{t('compose.instructLyrics')}</li>
+              <li>{t('compose.instructSymbols')}</li>
+              <li>{t('compose.instructTranspose')}</li>
+              <li>{t('compose.instructTabs')}</li>
             </ul>
           </div>
         </header>
 
         <div className="composer-section">
-          <label className="composer-label">Enter your melody (notes and lyrics):</label>
+          <label className="composer-label">{t('compose.enterMelody')}</label>
           {/* <MelodyPlayer notation={notation} disabled={!isValid || !notation} /> */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px', flexWrap: 'wrap' }}>
             <TransposeControls
@@ -276,7 +278,7 @@ function ComposerPage() {
           </div>
           {originalTabs && (
             <button className="btn-reset-transpose" onClick={handleResetTranspose}>
-              Reset
+              {t('compose.reset')}
             </button>
           )}
           <InstrumentTabs
@@ -293,29 +295,29 @@ function ComposerPage() {
             onValidationChange={handleValidationChange}
           />
           {saveSuccess && (
-            <p className="save-success">Melody saved successfully!</p>
+            <p className="save-success">{t('compose.savedSuccess')}</p>
           )}
           <button
             className="btn-save"
             onClick={handleSave}
             disabled={!isValid || !notation}
           >
-            {isAuthenticated ? 'Save Melody' : 'Save (Login Required)'}
+            {isAuthenticated ? t('compose.save') : t('compose.saveLoginRequired')}
           </button>
         </div>
 
         {showSaveDialog && (
           <div className="save-dialog-overlay">
             <div className="save-dialog">
-              <h3>Save Melody</h3>
+              <h3>{t('compose.saveDialog.title')}</h3>
               <div className="form-group">
-                <label htmlFor="melody-title">Title</label>
+                <label htmlFor="melody-title">{t('compose.saveDialog.titleLabel')}</label>
                 <input
                   id="melody-title"
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter a title for your melody"
+                  placeholder={t('compose.saveDialog.titlePlaceholder')}
                   maxLength={200}
                 />
               </div>
@@ -326,13 +328,13 @@ function ComposerPage() {
                   onClick={handleSaveConfirm}
                   disabled={saving}
                 >
-                  {saving ? 'Saving...' : 'Save'}
+                  {saving ? t('compose.saveDialog.saving') : t('compose.saveDialog.saveButton')}
                 </button>
                 <button
                   className="btn-secondary"
                   onClick={() => setShowSaveDialog(false)}
                 >
-                  Cancel
+                  {t('compose.saveDialog.cancel')}
                 </button>
               </div>
             </div>

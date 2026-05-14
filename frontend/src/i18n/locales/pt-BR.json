@@ -1,0 +1,130 @@
+{
+  "nav": {
+    "setlists": "Setlists",
+    "compose": "Compor",
+    "myMelodies": "Minhas Melodias",
+    "mySetlists": "Meus Setlists",
+    "login": "Entrar",
+    "logout": "Sair"
+  },
+  "home": {
+    "title": "Melodias Recentes",
+    "composeNew": "Compor Nova",
+    "empty": "Nenhuma melodia ainda. Seja o primeiro a compor!",
+    "loading": "Carregando...",
+    "by": "por {name}"
+  },
+  "compose": {
+    "title": "Componha sua Melodia",
+    "howToUse": "Como usar:",
+    "instructSolfege": "Digite sílabas de solfejo: do, re, mi, fa, sol, la, si",
+    "instructAccidentals": "Adicione acidentes com # (sustenido) ou b (bemol): do#, reb, fa#",
+    "instructOctave": "Mude a oitava: MAIÚSCULO = oitava acima, minúsculo + número = oitava abaixo (DO = C5, do1 = C3)",
+    "instructLyrics": "Linhas com texto que não são notas são tratadas como letras (destacadas em laranja)",
+    "instructSymbols": "Símbolos como |, :, -, (, ) e números são ignorados nas linhas de notas",
+    "instructTranspose": "Use os botões de transposição para mover todas as notas para cima ou para baixo",
+    "instructTabs": "Adicione abas de instrumentos com + para ver a notação transposta para diferentes instrumentos",
+    "enterMelody": "Digite sua melodia (notas e letras):",
+    "save": "Salvar Melodia",
+    "saveLoginRequired": "Salvar (Login Necessário)",
+    "saveDialog": {
+      "title": "Salvar Melodia",
+      "titleLabel": "Título",
+      "titlePlaceholder": "Digite um título para sua melodia",
+      "saving": "Salvando...",
+      "saveButton": "Salvar",
+      "cancel": "Cancelar"
+    },
+    "savedSuccess": "Melodia salva com sucesso!",
+    "titleRequired": "Por favor, insira um título.",
+    "saveFailed": "Falha ao salvar melodia.",
+    "reset": "Resetar",
+    "placeholder": "do re mi fa sol\nParabéns pra você\ndo re mi fa sol"
+  },
+  "instrument": {
+    "selectTitle": "Selecione seu Instrumento",
+    "selectHint": "Escolha o instrumento em que você vai compor",
+    "selectInstrument": "Selecionar Instrumento",
+    "cancel": "Cancelar",
+    "piano": "Piano",
+    "saxophone": "Saxofone",
+    "trumpet": "Trompete",
+    "trombone": "Trombone"
+  },
+  "transpose": {
+    "halfStep": "meio tom",
+    "wholeStep": "tom",
+    "octave": "oitava",
+    "font": "fonte"
+  },
+  "flat": {
+    "label": "Ver notas bemol (b)"
+  },
+  "auth": {
+    "loginTab": "Entrar",
+    "registerTab": "Registrar",
+    "username": "Usuário",
+    "email": "E-mail",
+    "password": "Senha",
+    "loggingIn": "Entrando...",
+    "loginButton": "Entrar",
+    "creatingAccount": "Criando conta...",
+    "registerButton": "Registrar"
+  },
+  "melodies": {
+    "title": "Minhas Melodias",
+    "composeNew": "Compor Nova",
+    "loading": "Carregando suas melodias...",
+    "empty": "Você ainda não salvou nenhuma melodia.",
+    "createFirst": "Crie sua primeira melodia",
+    "share": "Compartilhar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "deleteConfirm": "Excluir?",
+    "yes": "Sim",
+    "no": "Não",
+    "linkCopied": "Link copiado!",
+    "loadFailed": "Falha ao carregar melodias.",
+    "deleteFailed": "Falha ao excluir melodia.",
+    "notes": "{count} notas"
+  },
+  "shared": {
+    "loading": "Carregando melodia compartilhada...",
+    "notFound": "Melodia Não Encontrada",
+    "notFoundMessage": "Esta melodia não foi encontrada ou não é mais pública.",
+    "loadFailed": "Falha ao carregar melodia.",
+    "editMelody": "Editar Melodia",
+    "reset": "Resetar",
+    "by": "por {name}"
+  },
+  "setlists": {
+    "title": "Setlists",
+    "myTitle": "Meus Setlists",
+    "loading": "Carregando setlists...",
+    "newPlaceholder": "Título do novo setlist...",
+    "creating": "Criando...",
+    "create": "Criar",
+    "emptyMine": "Você ainda não criou nenhum setlist.",
+    "emptyPublic": "Nenhum setlist público ainda.",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "by": "por {name}",
+    "melodyCount": "{count} melodias"
+  },
+  "setlistDetail": {
+    "loading": "Carregando setlist...",
+    "public": "Público",
+    "private": "Privado",
+    "share": "Compartilhar",
+    "linkCopied": "Link copiado!",
+    "addMelody": "Adicionar Melodia",
+    "addMelodyDialog": "Adicionar uma melodia",
+    "noMelodiesInLibrary": "Nenhuma melodia na sua biblioteca.",
+    "cancel": "Cancelar",
+    "empty": "Nenhuma melodia neste setlist. Clique em \"Adicionar Melodia\" para começar.",
+    "remove": "Remover",
+    "dragToReorder": "Arraste para reordenar",
+    "clickToEditTitle": "Clique para editar o título",
+    "by": "por {name}"
+  }
+}

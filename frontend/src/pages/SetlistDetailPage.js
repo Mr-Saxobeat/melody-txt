@@ -4,10 +4,12 @@ import setlistService from '../services/setlistService';
 import melodyService from '../services/melodyService';
 import api from '../services/api';
 import { copyToClipboard } from '../utils/clipboard';
+import useTranslation from '../i18n/useTranslation';
 
 function SetlistDetailPage({ readOnly = false }) {
   const { id, shareId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [setlist, setSetlist] = useState(null);
   const [melodies, setMelodies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +169,7 @@ function SetlistDetailPage({ readOnly = false }) {
     fetchSetlist();
   };
 
-  if (loading) return <div className="page-loading">Loading setlist...</div>;
+  if (loading) return <div className="page-loading">{t('setlistDetail.loading')}</div>;
   if (!setlist) return null;
 
   return (
@@ -181,37 +183,37 @@ function SetlistDetailPage({ readOnly = false }) {
             onBlur={handleTitleSave}
             onKeyDown={(e) => e.key === 'Enter' && handleTitleSave()}
             autoFocus
-            style={{ fontSize: '2rem', fontWeight: 'bold', border: 'none', borderBottom: '2px solid #1976d2', outline: 'none', background: 'transparent' }}
+            style={{ fontSize: '2rem', fontWeight: 'bold', border: 'none', borderBottom: '2px solid var(--primary-color, #1976d2)', outline: 'none', background: 'transparent' }}
           />
         ) : (
-          <h1 onClick={!readOnly ? () => setEditingTitle(true) : undefined} style={!readOnly ? { cursor: 'pointer' } : {}} title={!readOnly ? 'Click to edit title' : ''}>
+          <h1 onClick={!readOnly ? () => setEditingTitle(true) : undefined} style={!readOnly ? { cursor: 'pointer' } : {}} title={!readOnly ? t('setlistDetail.clickToEditTitle') : ''}>
             {setlist.title}
           </h1>
         )}
         {!readOnly && (
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <button className="btn-secondary" onClick={handleTogglePublic} style={{ fontSize: '0.85rem' }}>
-              {setlist.is_public ? '🔓 Public' : '🔒 Private'}
+              {setlist.is_public ? `🔓 ${t('setlistDetail.public')}` : `🔒 ${t('setlistDetail.private')}`}
             </button>
             <button className="btn-share" onClick={handleShare}>
-              {copySuccess ? 'Link copied!' : 'Share'}
+              {copySuccess ? t('setlistDetail.linkCopied') : t('setlistDetail.share')}
             </button>
             <button className="btn-primary" onClick={loadMelodies}>
-              Add Melody
+              {t('setlistDetail.addMelody')}
             </button>
           </div>
         )}
         {readOnly && setlist.author && (
-          <p style={{ color: '#666', margin: 0 }}>by {setlist.author.username}</p>
+          <p style={{ color: '#666', margin: 0 }}>{t('setlistDetail.by', { name: setlist.author.username })}</p>
         )}
       </div>
 
       {showAddPicker && (
         <div className="save-dialog-overlay">
           <div className="save-dialog">
-            <h3>Add a melody</h3>
+            <h3>{t('setlistDetail.addMelodyDialog')}</h3>
             {melodies.length === 0 ? (
-              <p>No melodies in your library.</p>
+              <p>{t('setlistDetail.noMelodiesInLibrary')}</p>
             ) : (
               <div style={{ maxHeight: '300px', overflow: 'auto' }}>
                 {melodies.map((m) => (
@@ -222,7 +224,7 @@ function SetlistDetailPage({ readOnly = false }) {
               </div>
             )}
             <button className="btn-secondary" onClick={() => setShowAddPicker(false)} style={{ marginTop: '12px' }}>
-              Cancel
+              {t('setlistDetail.cancel')}
             </button>
           </div>
         </div>
@@ -230,7 +232,7 @@ function SetlistDetailPage({ readOnly = false }) {
 
       {(!setlist.entries || setlist.entries.length === 0) ? (
         <div className="empty-state">
-          <p>No melodies in this setlist yet. Click "Add Melody" to get started.</p>
+          <p>{t('setlistDetail.empty')}</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -252,7 +254,7 @@ function SetlistDetailPage({ readOnly = false }) {
                 padding: '12px 16px',
                 background: draggingIndex === index ? '#e3f2fd' : 'white',
                 borderRadius: '8px',
-                border: overIndex === index && draggingIndex !== null && draggingIndex !== index ? '2px solid #1976d2' : '1px solid #e0e0e0',
+                border: overIndex === index && draggingIndex !== null && draggingIndex !== index ? '2px solid var(--primary-color, #1976d2)' : '1px solid #e0e0e0',
                 gap: '12px',
                 cursor: 'pointer',
                 opacity: draggingIndex === index ? 0.6 : 1,
@@ -266,7 +268,7 @@ function SetlistDetailPage({ readOnly = false }) {
                   onTouchStart={(e) => { e.stopPropagation(); handleTouchStart(index); }}
                   onClick={(e) => e.stopPropagation()}
                   style={{ cursor: 'grab', fontSize: '1.2rem', color: '#999', userSelect: 'none', touchAction: 'none' }}
-                  title="Drag to reorder"
+                  title={t('setlistDetail.dragToReorder')}
                 >
                   &#x2630;
                 </span>
@@ -281,7 +283,7 @@ function SetlistDetailPage({ readOnly = false }) {
                   onClick={(e) => { e.stopPropagation(); handleRemoveEntry(entry.id); }}
                   style={{ padding: '4px 12px', fontSize: '0.8rem' }}
                 >
-                  Remove
+                  {t('setlistDetail.remove')}
                 </button>
               )}
             </div>

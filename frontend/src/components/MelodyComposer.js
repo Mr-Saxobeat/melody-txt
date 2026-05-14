@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { classifyLines } from '../utils/validation';
+import useTranslation from '../i18n/useTranslation';
 import './MelodyComposer.css';
 
 function MelodyComposer({ notation, onChange, onValidationChange }) {
   const textareaRef = useRef(null);
   const backdropRef = useRef(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!notation || !notation.trim()) {
@@ -66,9 +68,9 @@ function MelodyComposer({ notation, onChange, onValidationChange }) {
           value={notation}
           onChange={handleChange}
           onScroll={handleScroll}
-          placeholder={"do re mi fa sol\nHappy birthday to you\ndo re mi fa sol"}
+          placeholder={t('compose.placeholder')}
           rows={3}
-          aria-label="Enter your melody"
+          aria-label={t('compose.enterMelody')}
           spellCheck={false}
         />
       </div>

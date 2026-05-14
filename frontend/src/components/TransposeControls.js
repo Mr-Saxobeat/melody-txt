@@ -1,7 +1,10 @@
 import React from 'react';
+import useTranslation from '../i18n/useTranslation';
 import './TransposeControls.css';
 
 function TransposeControls({ onTranspose, disabled }) {
+  const { t } = useTranslation();
+
   return (
     <div className="transpose-controls">
       <div className="transpose-group">
@@ -13,7 +16,7 @@ function TransposeControls({ onTranspose, disabled }) {
         >
           -
         </button>
-        <span className="transpose-label">half step</span>
+        <span className="transpose-label">{t('transpose.halfStep')}</span>
         <button
           className="transpose-btn plus"
           onClick={() => onTranspose(1)}
@@ -32,7 +35,7 @@ function TransposeControls({ onTranspose, disabled }) {
         >
           -
         </button>
-        <span className="transpose-label">whole step</span>
+        <span className="transpose-label">{t('transpose.wholeStep')}</span>
         <button
           className="transpose-btn plus"
           onClick={() => onTranspose(2)}
@@ -51,7 +54,7 @@ function TransposeControls({ onTranspose, disabled }) {
         >
           -
         </button>
-        <span className="transpose-label">octave</span>
+        <span className="transpose-label">{t('transpose.octave')}</span>
         <button
           className="transpose-btn plus"
           onClick={() => onTranspose(12)}

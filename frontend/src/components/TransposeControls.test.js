@@ -63,8 +63,8 @@ describe('TransposeControls', () => {
 
   test('displays labels for each group', () => {
     render(<TransposeControls onTranspose={() => {}} disabled={false} />);
-    expect(screen.getByText('half step')).toBeInTheDocument();
-    expect(screen.getByText('whole step')).toBeInTheDocument();
-    expect(screen.getByText('octave')).toBeInTheDocument();
+    expect(screen.getByText('meio tom')).toBeInTheDocument();
+    expect(screen.getByText('tom')).toBeInTheDocument();
+    expect(screen.getByText('oitava')).toBeInTheDocument();
   });
 });

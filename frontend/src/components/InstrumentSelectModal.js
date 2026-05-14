@@ -1,13 +1,16 @@
 import React from 'react';
 import { INSTRUMENTS } from '../utils/instruments';
+import useTranslation from '../i18n/useTranslation';
 import './InstrumentSelectModal.css';
 
 function InstrumentSelectModal({ onSelect, onDismiss }) {
+  const { t } = useTranslation();
+
   return (
     <div className="source-modal-overlay" onClick={onDismiss}>
       <div className="source-modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Select Your Instrument</h3>
-        <p className="source-modal-hint">Choose the instrument you'll compose in</p>
+        <h3>{t('instrument.selectTitle')}</h3>
+        <p className="source-modal-hint">{t('instrument.selectHint')}</p>
         <div className="source-instrument-list">
           {INSTRUMENTS.map((inst) => (
             <button
@@ -15,7 +18,7 @@ function InstrumentSelectModal({ onSelect, onDismiss }) {
               className="source-instrument-option"
               onClick={() => onSelect(inst.id)}
             >
-              {inst.name} in {inst.key}
+              {t(`instrument.${inst.id}`)} in {inst.key}
             </button>
           ))}
         </div>
