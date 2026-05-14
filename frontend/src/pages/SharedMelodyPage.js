@@ -34,13 +34,13 @@ function SharedMelodyPage() {
   useEffect(() => {
     const findMatch = (tabList, query) => {
       if (!query) return 0;
-      const labelMatch = tabList.findIndex((t) => {
-        const inst = getInstrumentById(t.instrument);
-        const label = t.suffix ? `${inst.name} - ${t.suffix}` : inst.name;
+      const labelMatch = tabList.findIndex((tab) => {
+        const name = t(`instrument.${tab.instrument}`);
+        const label = tab.suffix ? `${name} - ${tab.suffix}` : name;
         return label.toLowerCase() === query.toLowerCase();
       });
       if (labelMatch >= 0) return labelMatch;
-      const instrumentMatch = tabList.findIndex((t) => t.instrument === query);
+      const instrumentMatch = tabList.findIndex((tab) => tab.instrument === query);
       if (instrumentMatch >= 0) return instrumentMatch;
       return 0;
     };
