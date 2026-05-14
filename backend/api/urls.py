@@ -6,6 +6,7 @@ from .views import (
     RegisterView, MelodyViewSet, SharedMelodyView, TransposeMelodyView,
     RecentMelodiesView, MelodyTabView,
     SetlistViewSet, SetlistEntryView, SharedSetlistView, RecentSetlistsView,
+    SiteSettingsView,
 )
 
 router = DefaultRouter()
@@ -25,5 +26,6 @@ urlpatterns = [
     path('setlists/shared/<str:share_id>/', SharedSetlistView.as_view(), name='shared-setlist'),
     path('setlists/<uuid:setlist_id>/entries/', SetlistEntryView.as_view(), name='setlist-entries'),
     path('setlists/<uuid:setlist_id>/entries/<uuid:entry_id>/', SetlistEntryView.as_view(), name='setlist-entry-detail'),
+    path('site-settings/', SiteSettingsView.as_view(), name='site-settings'),
     path('', include(router.urls)),
 ]

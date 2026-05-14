@@ -1,6 +1,7 @@
 .transpose-controls {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
@@ -55,4 +56,25 @@
   font-weight: 600;
   color: #555;
   padding: 0 4px;
+}
+
+@media (max-width: 640px) {
+  .transpose-controls {
+    gap: 6px;
+  }
+
+  .transpose-group {
+    flex: 1 1 calc(50% - 3px);
+    min-width: 0;
+  }
+
+  .transpose-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  .transpose-label {
+    font-size: 0.75rem;
+  }
 }

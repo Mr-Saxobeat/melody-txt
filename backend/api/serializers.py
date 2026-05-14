@@ -222,6 +222,18 @@ class SharedSetlistSerializer(serializers.ModelSerializer):
         return None
 
 
+class SiteSettingsSerializer(serializers.Serializer):
+    site_title = serializers.CharField()
+    tab_title = serializers.CharField()
+    primary_color = serializers.CharField()
+    header_background_color = serializers.CharField()
+    logo_text_color = serializers.CharField()
+    main_background_color = serializers.CharField()
+    logo_font_family = serializers.CharField(allow_blank=True)
+    logo_font_size = serializers.CharField()
+    header_gradient = serializers.CharField(allow_blank=True)
+
+
 # Deferred model assignment to avoid circular imports
 def _set_models():
     from melodies.models import Melody, MelodyTab

@@ -133,27 +133,32 @@ function SharedMelodyPage() {
         <h1>{melody.title}</h1>
 
         {tabs.length > 1 && (
-          <div className="shared-tabs-bar" style={{ display: 'flex', gap: '4px', marginBottom: '12px', overflowX: 'auto' }}>
-            {tabs.map((tab, i) => (
-              <button
-                key={tab.id}
-                onClick={() => handleTabSwitch(i)}
-                style={{
-                  padding: '6px 12px',
-                  border: `2px solid ${i === activeTabIndex ? '#1976d2' : '#e0e0e0'}`,
-                  borderRadius: '8px',
-                  background: i === activeTabIndex ? '#e3f2fd' : '#f5f5f5',
-                  color: i === activeTabIndex ? '#1976d2' : '#555',
-                  fontWeight: 600,
-                  fontSize: '0.8rem',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                }}
+          <>
+            <div className="shared-tabs-dropdown">
+              <select
+                className="shared-tabs-select"
+                value={activeTabIndex}
+                onChange={(e) => handleTabSwitch(parseInt(e.target.value, 10))}
               >
-                {getTabLabel(tab)}
-              </button>
-            ))}
-          </div>
+                {tabs.map((tab, i) => (
+                  <option key={tab.id} value={i}>
+                    {getTabLabel(tab)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="shared-tabs-bar">
+              {tabs.map((tab, i) => (
+                <button
+                  key={tab.id}
+                  className={`shared-tab-btn ${i === activeTabIndex ? 'active' : ''}`}
+                  onClick={() => handleTabSwitch(i)}
+                >
+                  {getTabLabel(tab)}
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
         <div style={{ fontSize: `${fontSize}rem`, fontWeight: 600, whiteSpace: 'pre-wrap', marginBottom: '12px' }}>
@@ -234,6 +239,14 @@ function SharedMelodyPage() {
           </div>
           <FlatToggle preferFlat={preferFlat} onToggle={handleFlatToggle} />
         </div>
+        {transposeSemitones !== 0 && (
+          <button
+            className="btn-reset-transpose"
+            onClick={() => setTransposeSemitones(0)}
+          >
+            Reset
+          </button>
+        )}
 
         {/* <MelodyPlayer notation={displayNotation} /> */}
 

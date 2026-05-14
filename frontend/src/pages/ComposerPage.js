@@ -25,6 +25,7 @@ function ComposerPage() {
   const [editingId, setEditingId] = useState(null);
   const [showSourceModal, setShowSourceModal] = useState(false);
   const [sourceInstrument, setSourceInstrument] = useState(null);
+  const [originalTabs, setOriginalTabs] = useState(null);
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -107,9 +108,19 @@ function ComposerPage() {
   };
 
   const handleTranspose = (semitones) => {
+    if (!originalTabs) {
+      setOriginalTabs(tabs.map((t) => ({ ...t })));
+    }
     setTabs((prev) =>
       prev.map((t) => ({ ...t, notation: transposeNotes(t.notation, semitones, !preferFlat) }))
     );
+  };
+
+  const handleResetTranspose = () => {
+    if (originalTabs) {
+      setTabs(originalTabs);
+      setOriginalTabs(null);
+    }
   };
 
   const handleAddTab = (instrumentId) => {
@@ -256,13 +267,18 @@ function ComposerPage() {
         <div className="composer-section">
           <label className="composer-label">Enter your melody (notes and lyrics):</label>
           {/* <MelodyPlayer notation={notation} disabled={!isValid || !notation} /> */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px', flexWrap: 'wrap' }}>
             <TransposeControls
               onTranspose={handleTranspose}
               disabled={!notation}
             />
             <FlatToggle preferFlat={preferFlat} onToggle={handleFlatToggle} />
           </div>
+          {originalTabs && (
+            <button className="btn-reset-transpose" onClick={handleResetTranspose}>
+              Reset
+            </button>
+          )}
           <InstrumentTabs
             tabs={tabs}
             activeTabId={activeTabId}

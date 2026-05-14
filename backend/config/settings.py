@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_spectacular',
     # Local apps
+    'config.apps.ConfigAppConfig',
     'users',
     'melodies',
     'setlists',

@@ -13,10 +13,12 @@ from .serializers import (
     SetlistListSerializer,
     SetlistEntrySerializer,
     SharedSetlistSerializer,
+    SiteSettingsSerializer,
 )
 from melodies.models import Melody, MelodyTab
 from melodies.utils import transpose_between_instruments
 from setlists.models import Setlist, SetlistEntry
+from config.models import SiteSettings
 
 
 class RegisterView(generics.CreateAPIView):
@@ -291,3 +293,12 @@ class SharedSetlistView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return Setlist.objects.filter(is_public=True)
+
+
+class SiteSettingsView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        settings = SiteSettings.load()
+        serializer = SiteSettingsSerializer(settings)
+        return Response(serializer.data)

@@ -1,13 +1,69 @@
 .instrument-tabs {
   margin-bottom: 12px;
+  max-width: 100%;
 }
 
+/* Mobile dropdown - hidden on desktop */
+.tabs-dropdown {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.tabs-select {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #fff;
+  cursor: pointer;
+  appearance: auto;
+}
+
+.tabs-select:focus {
+  outline: none;
+  border-color: #1976d2;
+}
+
+.tab-delete-mobile {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 1.2rem;
+  color: #999;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-delete-mobile:hover {
+  border-color: #d32f2f;
+  color: #d32f2f;
+}
+
+/* Desktop tabs bar */
 .tabs-bar {
   display: flex;
   gap: 4px;
   align-items: center;
   overflow-x: auto;
   padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.tabs-bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabs-bar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
 }
 
 .tab-item {
@@ -22,6 +78,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.2s, border-color 0.2s;
 }
 
@@ -76,11 +133,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .tab-add:hover {
   border-color: #1976d2;
   color: #1976d2;
+}
+
+/* Mobile: show dropdown, hide tabs bar */
+@media (max-width: 640px) {
+  .tabs-dropdown {
+    display: flex;
+  }
+
+  .tabs-bar {
+    display: none;
+  }
 }
 
 .instrument-modal-overlay {

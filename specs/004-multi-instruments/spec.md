@@ -108,6 +108,8 @@ When a user uses the transpose controls on the compose or shared melody page, al
 - Q: Should the auto-title rule (extract first line as title) continue with the new multi-tab flow? → A: Keep auto-title as a pre-filled suggestion but do NOT remove the first line from the notation
 - Q: What happens when the user dismisses the source instrument modal? → A: Modal closes, composer loads normally with no tabs, the "+" button is available so the user can choose an instrument later
 - Q: How should tab names display on compose vs shared page? → A: Compose page shows instrument name only (e.g., "Saxophone"); shared page shows instrument name + suffix (e.g., "Saxophone - 1")
+- Q: How should transpose buttons layout on mobile? → A: Responsive two-row layout: row 1 = half step + whole step, row 2 = octave + font size. Buttons scale to fit screen width.
+- Q: How should the navigation work on mobile? → A: Hamburger menu that toggles a vertical dropdown nav. Links close the menu on click.
 
 ## Assumptions
 

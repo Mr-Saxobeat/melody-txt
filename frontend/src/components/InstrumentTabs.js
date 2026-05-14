@@ -37,9 +37,41 @@ function InstrumentTabs({ tabs, activeTabId, onTabSelect, onAddTab, onDeleteTab,
     onAddTab(instrumentId);
   };
 
+  const activeTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
+
   return (
     <>
       <div className="instrument-tabs">
+        {/* Mobile dropdown */}
+        <div className="tabs-dropdown">
+          <select
+            className="tabs-select"
+            value={activeTabId || ''}
+            onChange={(e) => onTabSelect(e.target.value)}
+          >
+            {tabs.map((tab) => (
+              <option key={tab.id} value={tab.id}>
+                {getTabLabel(tab)}
+              </option>
+            ))}
+          </select>
+          {tabs.length > 1 && activeTab && (
+            <button
+              className="tab-delete-mobile"
+              onClick={() => onDeleteTab(activeTabId)}
+              aria-label={`Delete ${activeTab ? getTabLabel(activeTab) : ''} tab`}
+            >
+              &times;
+            </button>
+          )}
+          {tabs.length < 10 && (
+            <button className="tab-add" onClick={handleAddClick} aria-label="Add instrument tab">
+              +
+            </button>
+          )}
+        </div>
+
+        {/* Desktop tabs bar */}
         <div className="tabs-bar">
           {tabs.map((tab) => (
             <div
