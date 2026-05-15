@@ -224,3 +224,99 @@ class TestSharedMelody:
     def test_get_shared_melody_nonexistent_returns_404(self, api_client):
         response = api_client.get('/api/melodies/shared/nonexistent1/')
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+class TestRecentMelodiesPagination:
+
+    def test_returns_cursor_paginated_response(self, api_client, user):
+        for i in range(3):
+            Melody.objects.create(
+                user=user, title=f'Song {i}', notation='do re mi', is_public=True
+            )
+        response = api_client.get('/api/melodies/recent/')
+        assert response.status_code == status.HTTP_200_OK
+        assert 'results' in response.data
+        assert 'next' in response.data
+        assert 'previous' in response.data
+
+    def test_search_filters_by_title_case_insensitive(self, api_client, user):
+        Melody.objects.create(
+            user=user, title='Bossa Nova', notation='do re mi', is_public=True
+        )
+        Melody.objects.create(
+            user=user, title='Jazz Waltz', notation='fa sol la', is_public=True
+        )
+        response = api_client.get('/api/melodies/recent/', {'search': 'bossa'})
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1
+        assert response.data['results'][0]['title'] == 'Bossa Nova'
+
+    def test_search_partial_substring_match(self, api_client, user):
+        Melody.objects.create(
+            user=user, title='My Beautiful Song', notation='do re mi', is_public=True
+        )
+        response = api_client.get('/api/melodies/recent/', {'search': 'eautiful'})
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1
+
+    def test_empty_search_returns_all(self, api_client, user):
+        Melody.objects.create(
+            user=user, title='Song A', notation='do re mi', is_public=True
+        )
+        Melody.objects.create(
+            user=user, title='Song B', notation='fa sol la', is_public=True
+        )
+        response = api_client.get('/api/melodies/recent/', {'search': ''})
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 2
+
+    def test_whitespace_search_returns_all(self, api_client, user):
+        Melody.objects.create(
+            user=user, title='Song A', notation='do re mi', is_public=True
+        )
+        response = api_client.get('/api/melodies/recent/', {'search': '   '})
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1
+
+    def test_pagination_cursor_returns_next_page(self, api_client, user):
+        for i in range(25):
+            Melody.objects.create(
+                user=user, title=f'Song {i:02d}', notation='do re mi', is_public=True
+            )
+        response = api_client.get('/api/melodies/recent/')
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 20
+        assert response.data['next'] is not None
+
+        next_response = api_client.get(response.data['next'])
+        assert next_response.status_code == status.HTTP_200_OK
+        assert len(next_response.data['results']) == 5
+
+    def test_only_public_melodies_returned(self, api_client, user):
+        Melody.objects.create(
+            user=user, title='Public Song', notation='do re mi', is_public=True
+        )
+        Melody.objects.create(
+            user=user, title='Private Song', notation='fa sol la', is_public=False
+        )
+        response = api_client.get('/api/melodies/recent/')
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1
+        assert response.data['results'][0]['title'] == 'Public Song'
+
+    def test_search_with_accented_characters(self, api_client, user):
+        Melody.objects.create(
+            user=user, title='Canção Brasileira', notation='do re mi', is_public=True
+        )
+        Melody.objects.create(
+            user=user, title='Ação Musical', notation='fa sol la', is_public=True
+        )
+        response = api_client.get('/api/melodies/recent/', {'search': 'canção'})
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1
+        assert response.data['results'][0]['title'] == 'Canção Brasileira'
+
+        response = api_client.get('/api/melodies/recent/', {'search': 'ação'})
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1

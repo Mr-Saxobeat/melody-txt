@@ -62,6 +62,22 @@ const melodyService = {
   async deleteTab(melodyId, tabId) {
     await api.delete(`/melodies/${melodyId}/tabs/${tabId}/`);
   },
+
+  async getRecentMelodiesPaginated(cursor, search) {
+    const params = {};
+    if (cursor) params.cursor = cursor;
+    if (search && search.trim()) params.search = search.trim();
+    const response = await api.get('/melodies/recent/', { params });
+    return response.data;
+  },
+
+  async searchMelodies(search, cursor) {
+    const params = {};
+    if (cursor) params.cursor = cursor;
+    if (search && search.trim()) params.search = search.trim();
+    const response = await api.get('/melodies/search/', { params });
+    return response.data;
+  },
 };
 
 export default melodyService;

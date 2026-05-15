@@ -1,4 +1,6 @@
+from django.db.models import Q
 from rest_framework import status, generics, viewsets
+from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -19,6 +21,11 @@ from melodies.models import Melody, MelodyTab
 from melodies.utils import transpose_between_instruments
 from setlists.models import Setlist, SetlistEntry
 from config.models import SiteSettings
+
+
+class MelodyCursorPagination(CursorPagination):
+    page_size = 20
+    ordering = '-created_at'
 
 
 class RegisterView(generics.CreateAPIView):
@@ -68,13 +75,35 @@ class SharedMelodyView(generics.RetrieveAPIView):
 
 
 class RecentMelodiesView(generics.ListAPIView):
-    """Public endpoint listing recent public melodies."""
+    """Public endpoint listing recent public melodies with optional search."""
 
     serializer_class = SharedMelodySerializer
     permission_classes = [AllowAny]
+    pagination_class = MelodyCursorPagination
 
     def get_queryset(self):
-        return Melody.objects.filter(is_public=True).order_by('-created_at')[:50]
+        queryset = Melody.objects.filter(is_public=True)
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(title__icontains=search)
+        return queryset
+
+
+class MelodySearchView(generics.ListAPIView):
+    """Authenticated endpoint to search own + public melodies."""
+
+    serializer_class = SharedMelodySerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = MelodyCursorPagination
+
+    def get_queryset(self):
+        queryset = Melody.objects.filter(
+            Q(user=self.request.user) | Q(is_public=True)
+        ).distinct()
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(title__icontains=search)
+        return queryset
 
 
 class TransposeMelodyView(generics.GenericAPIView):

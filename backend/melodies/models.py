@@ -46,6 +46,7 @@ class Melody(models.Model):
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['is_public', '-created_at']),
         ]
 
     def __str__(self):

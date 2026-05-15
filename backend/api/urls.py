@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .views import (
     RegisterView, MelodyViewSet, SharedMelodyView, TransposeMelodyView,
-    RecentMelodiesView, MelodyTabView,
+    RecentMelodiesView, MelodySearchView, MelodyTabView,
     SetlistViewSet, SetlistEntryView, SharedSetlistView, RecentSetlistsView,
     SiteSettingsView,
 )
@@ -18,6 +18,7 @@ urlpatterns = [
     path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('melodies/recent/', RecentMelodiesView.as_view(), name='recent-melodies'),
+    path('melodies/search/', MelodySearchView.as_view(), name='melody-search'),
     path('melodies/shared/<str:share_id>/', SharedMelodyView.as_view(), name='shared-melody'),
     path('melodies/<uuid:melody_id>/tabs/', MelodyTabView.as_view(), name='melody-tabs'),
     path('melodies/<uuid:melody_id>/tabs/<uuid:tab_id>/', MelodyTabView.as_view(), name='melody-tab-detail'),

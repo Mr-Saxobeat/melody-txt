@@ -111,6 +111,11 @@
     "by": "por {name}",
     "melodyCount": "{count} melodias"
   },
+  "search": {
+    "placeholder": "Buscar melodias...",
+    "noResults": "Nenhuma melodia encontrada para \"{term}\".",
+    "loading": "Buscando..."
+  },
   "setlistDetail": {
     "loading": "Carregando setlist...",
     "public": "Público",

@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import setlistService from '../services/setlistService';
 import melodyService from '../services/melodyService';
-import api from '../services/api';
 import { copyToClipboard } from '../utils/clipboard';
+import useDebounce from '../hooks/useDebounce';
 import useTranslation from '../i18n/useTranslation';
 
 function SetlistDetailPage({ readOnly = false }) {
@@ -14,9 +14,12 @@ function SetlistDetailPage({ readOnly = false }) {
   const [melodies, setMelodies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddPicker, setShowAddPicker] = useState(false);
+  const [modalSearchTerm, setModalSearchTerm] = useState('');
+  const [modalSearchLoading, setModalSearchLoading] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState('');
+  const debouncedModalSearch = useDebounce(modalSearchTerm, 300);
   const dragItem = useRef(null);
   const dragOverItem = useRef(null);
   const canDrag = useRef(false);
@@ -41,19 +44,36 @@ function SetlistDetailPage({ readOnly = false }) {
   useEffect(() => { fetchSetlist(); }, [fetchSetlist]);
 
   const loadMelodies = async () => {
+    setShowAddPicker(true);
+    setModalSearchTerm('');
+    setModalSearchLoading(true);
     try {
-      const [own, recent] = await Promise.all([
-        melodyService.getUserMelodies(),
-        api.get('/melodies/recent/'),
-      ]);
-      const ownList = own.results || [];
-      const recentList = (recent.data.results || recent.data).filter(
-        (m) => !ownList.some((o) => o.id === m.id)
-      );
-      setMelodies([...ownList, ...recentList]);
-      setShowAddPicker(true);
-    } catch (err) {}
+      const data = await melodyService.searchMelodies('');
+      setMelodies(data.results || []);
+    } catch (err) {
+      setMelodies([]);
+    } finally {
+      setModalSearchLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (!showAddPicker) return;
+    let cancelled = false;
+    const search = async () => {
+      setModalSearchLoading(true);
+      try {
+        const data = await melodyService.searchMelodies(debouncedModalSearch);
+        if (!cancelled) setMelodies(data.results || []);
+      } catch (err) {
+        if (!cancelled) setMelodies([]);
+      } finally {
+        if (!cancelled) setModalSearchLoading(false);
+      }
+    };
+    search();
+    return () => { cancelled = true; };
+  }, [debouncedModalSearch, showAddPicker]);
 
   const handleAddMelody = async (melodyId) => {
     const position = setlist.entries ? setlist.entries.length : 0;
@@ -212,8 +232,31 @@ function SetlistDetailPage({ readOnly = false }) {
         <div className="save-dialog-overlay">
           <div className="save-dialog">
             <h3>{t('setlistDetail.addMelodyDialog')}</h3>
-            {melodies.length === 0 ? (
-              <p>{t('setlistDetail.noMelodiesInLibrary')}</p>
+            <input
+              type="text"
+              placeholder={t('search.placeholder')}
+              value={modalSearchTerm}
+              onChange={(e) => setModalSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                fontSize: '0.95rem',
+                border: '1px solid #e0e0e0',
+                borderRadius: '6px',
+                marginBottom: '12px',
+                boxSizing: 'border-box',
+              }}
+            />
+            {modalSearchLoading ? (
+              <div style={{ textAlign: 'center', padding: '12px', color: '#666' }}>
+                {t('search.loading')}
+              </div>
+            ) : melodies.length === 0 ? (
+              <p>
+                {modalSearchTerm.trim()
+                  ? t('search.noResults', { term: modalSearchTerm })
+                  : t('setlistDetail.noMelodiesInLibrary')}
+              </p>
             ) : (
               <div style={{ maxHeight: '300px', overflow: 'auto' }}>
                 {melodies.map((m) => (
