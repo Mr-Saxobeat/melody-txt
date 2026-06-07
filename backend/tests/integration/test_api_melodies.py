@@ -117,13 +117,12 @@ class TestListMelodies:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['count'] == 2
 
-    def test_list_only_own_melodies(self, authenticated_client, user, other_user):
+    def test_list_shows_all_melodies(self, authenticated_client, user, other_user):
         Melody.objects.create(user=user, title='Mine', notation='do re mi')
         Melody.objects.create(user=other_user, title='Theirs', notation='fa sol la')
 
         response = authenticated_client.get('/api/melodies/')
-        assert response.data['count'] == 1
-        assert response.data['results'][0]['title'] == 'Mine'
+        assert response.data['count'] == 2
 
     def test_list_melodies_ordering(self, authenticated_client, user):
         Melody.objects.create(user=user, title='First', notation='do')
@@ -145,12 +144,13 @@ class TestRetrieveMelody:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['title'] == 'Test Melody'
 
-    def test_get_other_user_melody_returns_404(self, authenticated_client, other_user):
+    def test_get_other_user_melody_succeeds(self, authenticated_client, other_user):
         other_melody = Melody.objects.create(
             user=other_user, title='Other', notation='do re'
         )
         response = authenticated_client.get(f'/api/melodies/{other_melody.id}/')
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['title'] == 'Other'
 
 
 @pytest.mark.django_db
@@ -171,15 +171,16 @@ class TestUpdateMelody:
         assert response.data['key'] == 'G'
         assert response.data['note_count'] == 4
 
-    def test_update_other_user_melody_returns_404(self, authenticated_client, other_user):
+    def test_update_other_user_melody_succeeds(self, authenticated_client, other_user):
         other_melody = Melody.objects.create(
             user=other_user, title='Other', notation='do re'
         )
-        data = {'title': 'Hacked', 'notation': 'do re mi', 'key': 'C', 'is_public': True}
+        data = {'title': 'Updated', 'notation': 'do re mi', 'key': 'C', 'is_public': True}
         response = authenticated_client.put(
             f'/api/melodies/{other_melody.id}/', data, format='json'
         )
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['title'] == 'Updated'
 
 
 @pytest.mark.django_db
@@ -190,12 +191,13 @@ class TestDeleteMelody:
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not Melody.objects.filter(id=melody.id).exists()
 
-    def test_delete_other_user_melody_returns_404(self, authenticated_client, other_user):
+    def test_delete_other_user_melody_succeeds(self, authenticated_client, other_user):
         other_melody = Melody.objects.create(
             user=other_user, title='Other', notation='do re'
         )
         response = authenticated_client.delete(f'/api/melodies/{other_melody.id}/')
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        assert not Melody.objects.filter(id=other_melody.id).exists()
 
 
 @pytest.mark.django_db

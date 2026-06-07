@@ -252,7 +252,7 @@ function SharedMelodyPage() {
 
         {/* <MelodyPlayer notation={displayNotation} /> */}
 
-        {user && melody.author && user.username === melody.author.username && (
+        {user && (
           <button
             className="btn-edit"
             onClick={() => navigate(`/compose?edit=${melody.id}`)}

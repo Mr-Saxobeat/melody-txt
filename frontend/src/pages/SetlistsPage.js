@@ -46,7 +46,7 @@ function SetlistsPage({ mode = 'mine' }) {
     setSetlists(setlists.filter((s) => s.id !== id));
   };
 
-  const isOwner = (setlist) => user && setlist.author && setlist.author.username === user.username;
+  const canEdit = () => !!user;
 
   if (loading) return <div className="page-loading">{t('setlists.loading')}</div>;
 
@@ -84,7 +84,7 @@ function SetlistsPage({ mode = 'mine' }) {
               className="melody-card"
               style={{ cursor: 'pointer' }}
               onClick={() => {
-                if (isOwner(setlist)) {
+                if (canEdit()) {
                   navigate(`/setlists/${setlist.id}`);
                 } else {
                   navigate(`/shared-setlist/${setlist.share_id}`);
@@ -99,7 +99,7 @@ function SetlistsPage({ mode = 'mine' }) {
                 <span>{t('setlists.melodyCount', { count: setlist.entry_count })}</span>
                 <span>{new Date(setlist.created_at).toLocaleDateString('pt-BR')}</span>
               </div>
-              {isOwner(setlist) && (
+              {canEdit() && (
                 <div className="melody-actions" onClick={(e) => e.stopPropagation()}>
                   <button className="btn-edit" onClick={() => navigate(`/setlists/${setlist.id}`)}>
                     {t('setlists.edit')}

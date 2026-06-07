@@ -275,7 +275,8 @@ def _transpose_notation_text(text, semitones):
             acc_offset = 1 if accidental == '#' else (-1 if accidental == 'b' else 0)
 
             if is_upper:
-                octave = 5 + (int(number_str) if number_str else 0)
+                n = int(number_str) if number_str else 0
+                octave = (n + 3) if n >= 3 else (5 + n)
             else:
                 octave = 4 - (int(number_str) if number_str else 0)
 
@@ -300,8 +301,8 @@ def _transpose_notation_text(text, semitones):
                 num = 4 - new_octave
                 result_token = new_syllable + new_acc + str(num)
             else:
-                num = new_octave - 5
-                result_token = new_syllable.capitalize() + new_acc + (str(num) if num > 0 else '')
+                num = new_octave - 3
+                result_token = new_syllable.capitalize() + new_acc + str(num)
 
             transposed_tokens.append(result_token)
         result.append(' '.join(transposed_tokens))

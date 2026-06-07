@@ -51,13 +51,13 @@ class RegisterView(generics.CreateAPIView):
 
 
 class MelodyViewSet(viewsets.ModelViewSet):
-    """CRUD operations for user melodies."""
+    """CRUD operations for melodies. Any authenticated user can edit any melody."""
 
     serializer_class = MelodySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Melody.objects.filter(user=self.request.user)
+        return Melody.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -112,7 +112,7 @@ class TransposeMelodyView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Melody.objects.filter(user=self.request.user)
+        return Melody.objects.all()
 
     def post(self, request, pk):
         from melodies.utils import transpose_solfege_to_key
@@ -147,7 +147,7 @@ class MelodyTabView(generics.GenericAPIView):
     serializer_class = MelodyTabSerializer
 
     def get_melody(self, request, melody_id):
-        return Melody.objects.filter(id=melody_id, user=request.user).first()
+        return Melody.objects.filter(id=melody_id).first()
 
     def get(self, request, melody_id):
         melody = self.get_melody(request, melody_id)
@@ -233,6 +233,8 @@ class MelodyTabView(generics.GenericAPIView):
 
 
 class SetlistViewSet(viewsets.ModelViewSet):
+    """CRUD operations for setlists. Any authenticated user can edit any setlist."""
+
     permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
@@ -241,7 +243,7 @@ class SetlistViewSet(viewsets.ModelViewSet):
         return SetlistSerializer
 
     def get_queryset(self):
-        return Setlist.objects.filter(user=self.request.user)
+        return Setlist.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -251,7 +253,7 @@ class SetlistEntryView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_setlist(self, request, setlist_id):
-        return Setlist.objects.filter(id=setlist_id, user=request.user).first()
+        return Setlist.objects.filter(id=setlist_id).first()
 
     def post(self, request, setlist_id):
         setlist = self.get_setlist(request, setlist_id)

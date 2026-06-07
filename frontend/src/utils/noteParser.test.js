@@ -20,7 +20,13 @@ describe('parseNote', () => {
     expect(parseNote('SOL')).toMatchObject({ syllable: 'sol', octave: 5, semitone: 67 });
   });
 
-  test('parses uppercase + number as higher octaves', () => {
+  test('parses uppercase + number as higher octaves (new notation)', () => {
+    expect(parseNote('DO3')).toMatchObject({ syllable: 'do', octave: 6, semitone: 72 });
+    expect(parseNote('DO4')).toMatchObject({ syllable: 'do', octave: 7, semitone: 84 });
+    expect(parseNote('DO5')).toMatchObject({ syllable: 'do', octave: 8, semitone: 96 });
+  });
+
+  test('parses old notation DO1/DO2 with backward compatibility', () => {
     expect(parseNote('DO1')).toMatchObject({ syllable: 'do', octave: 6, semitone: 72 });
     expect(parseNote('DO2')).toMatchObject({ syllable: 'do', octave: 7, semitone: 84 });
   });
@@ -36,6 +42,7 @@ describe('parseNote', () => {
   });
 
   test('parses combined accidental + octave', () => {
+    expect(parseNote('DO#3')).toMatchObject({ syllable: 'do', accidental: '#', octave: 6, semitone: 73 });
     expect(parseNote('DO#1')).toMatchObject({ syllable: 'do', accidental: '#', octave: 6, semitone: 73 });
     expect(parseNote('reb2')).toMatchObject({ syllable: 're', accidental: 'b', octave: 2, semitone: 25 });
   });
@@ -77,9 +84,10 @@ describe('noteToString', () => {
     expect(noteToString(24)).toBe('do2');
   });
 
-  test('converts higher octaves with number suffix', () => {
-    expect(noteToString(72)).toBe('DO1');
-    expect(noteToString(84)).toBe('DO2');
+  test('converts higher octaves with new number notation', () => {
+    expect(noteToString(72)).toBe('DO3');
+    expect(noteToString(84)).toBe('DO4');
+    expect(noteToString(96)).toBe('DO5');
   });
 
   test('uses sharps when preferSharp is true', () => {
@@ -90,6 +98,14 @@ describe('noteToString', () => {
   test('uses flats when preferSharp is false', () => {
     expect(noteToString(49, false)).toBe('reb');
     expect(noteToString(51, false)).toBe('mib');
+  });
+
+  test('round-trip identity for upper octaves', () => {
+    [72, 84, 96].forEach((semitone) => {
+      const str = noteToString(semitone);
+      const parsed = parseNote(str);
+      expect(parsed.semitone).toBe(semitone);
+    });
   });
 });
 

@@ -52,7 +52,7 @@ export function parseNote(token) {
   const number = numberStr ? parseInt(numberStr, 10) : 0;
 
   if (isUpperCase) {
-    octave = 5 + number;
+    octave = number >= 3 ? number + 3 : 5 + number;
   } else {
     octave = 4 - number;
   }
@@ -80,8 +80,8 @@ export function noteToString(semitone, preferSharp = true) {
     const num = 4 - octave;
     notation = syllable + accidental + num;
   } else {
-    const num = octave - 5;
-    notation = syllable.toUpperCase() + accidental + (num > 0 ? num : '');
+    const num = octave - 3;
+    notation = syllable.toUpperCase() + accidental + num;
   }
 
   return notation;

@@ -2,8 +2,8 @@
   "nav": {
     "setlists": "Setlists",
     "compose": "Compor",
-    "myMelodies": "Minhas Melodias",
-    "mySetlists": "Meus Setlists",
+    "myMelodies": "Melodias",
+    "mySetlists": "Setlists",
     "login": "Entrar",
     "logout": "Sair"
   },
@@ -19,7 +19,7 @@
     "howToUse": "Como usar:",
     "instructSolfege": "Digite sílabas de solfejo: do, re, mi, fa, sol, la, si",
     "instructAccidentals": "Adicione acidentes com # (sustenido) ou b (bemol): do#, reb, fa#",
-    "instructOctave": "Mude a oitava: MAIÚSCULO = oitava acima, minúsculo + número = oitava abaixo (DO = C5, do1 = C3)",
+    "instructOctave": "Mude a oitava: MAIÚSCULO = oitava acima, minúsculo + número = oitava abaixo (DO = C5, DO3 = C6, do1 = C3)",
     "instructLyrics": "Linhas com texto que não são notas são tratadas como letras (destacadas em laranja)",
     "instructSymbols": "Símbolos como |, :, -, (, ) e números são ignorados nas linhas de notas",
     "instructTranspose": "Use os botões de transposição para mover todas as notas para cima ou para baixo",
@@ -72,11 +72,11 @@
     "registerButton": "Registrar"
   },
   "melodies": {
-    "title": "Minhas Melodias",
+    "title": "Todas as Melodias",
     "composeNew": "Compor Nova",
-    "loading": "Carregando suas melodias...",
-    "empty": "Você ainda não salvou nenhuma melodia.",
-    "createFirst": "Crie sua primeira melodia",
+    "loading": "Carregando melodias...",
+    "empty": "Nenhuma melodia ainda.",
+    "createFirst": "Crie a primeira melodia",
     "share": "Compartilhar",
     "edit": "Editar",
     "delete": "Excluir",
@@ -99,7 +99,7 @@
   },
   "setlists": {
     "title": "Setlists",
-    "myTitle": "Meus Setlists",
+    "myTitle": "Todos os Setlists",
     "loading": "Carregando setlists...",
     "newPlaceholder": "Título do novo setlist...",
     "creating": "Criando...",
