@@ -73,3 +73,14 @@
   color: #e65100;
   font-style: italic;
 }
+
+.editor-backdrop .highlight-hidden {
+  color: #81c784;
+  font-weight: 400;
+}
+
+.editor-backdrop .highlight-hidden-lyrics {
+  color: #ffab91;
+  font-weight: 400;
+  font-style: italic;
+}

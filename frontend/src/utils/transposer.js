@@ -1,4 +1,4 @@
-import { parseNote, noteToString } from './noteParser';
+import { parseNote, noteToString, stripSymbols } from './noteParser';
 
 const IGNORED_SYMBOL_REGEX = /^[|:\-./()0-9,;]+$/;
 const REPEAT_MARKER_REGEX = /^\(?(\d+[x,)]*)\)?$/i;
@@ -28,8 +28,12 @@ export function transposeNotes(notationString, semitones, preferSharp = null) {
     return line.replace(/\S+/g, (token) => {
       const parsed = parseNote(token);
       if (!parsed) return token;
+      const stripped = stripSymbols(token);
+      const prefixLen = token.indexOf(stripped);
+      const prefix = token.slice(0, prefixLen);
+      const suffix = token.slice(prefixLen + stripped.length);
       const newSemitone = parsed.semitone + semitones;
-      return noteToString(newSemitone, useSharp);
+      return prefix + noteToString(newSemitone, useSharp) + suffix;
     });
   });
 
@@ -46,7 +50,11 @@ export function convertAccidentals(notationString, preferSharp) {
     return line.replace(/\S+/g, (token) => {
       const parsed = parseNote(token);
       if (!parsed) return token;
-      return noteToString(parsed.semitone, preferSharp);
+      const stripped = stripSymbols(token);
+      const prefixLen = token.indexOf(stripped);
+      const prefix = token.slice(0, prefixLen);
+      const suffix = token.slice(prefixLen + stripped.length);
+      return prefix + noteToString(parsed.semitone, preferSharp) + suffix;
     });
   });
 

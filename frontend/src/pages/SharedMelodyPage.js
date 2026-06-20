@@ -5,6 +5,7 @@ import setlistService from '../services/setlistService';
 // import MelodyPlayer from '../components/MelodyPlayer';
 import { transposeNotes, convertAccidentals } from '../utils/transposer';
 import { classifyLines } from '../utils/validation';
+import { renderLineForView } from '../utils/hiddenNotes';
 import { getInstrumentById } from '../utils/instruments';
 import FlatToggle from '../components/FlatToggle';
 import '../components/TransposeControls.css';
@@ -164,14 +165,21 @@ function SharedMelodyPage() {
         )}
 
         <div style={{ fontSize: `${fontSize}rem`, fontWeight: 600, whiteSpace: 'pre-wrap', marginBottom: '12px' }}>
-          {classifyLines(displayNotation).map((line, i, arr) => (
-            <span key={i}>
-              <span style={{ color: line.type === 'notes' ? '#2e7d32' : line.type === 'lyrics' ? '#e65100' : '#333' }}>
-                {line.text}
+          {classifyLines(displayNotation).map((line, i, arr) => {
+            const baseColor = line.type === 'notes' ? '#2e7d32' : line.type === 'lyrics' ? '#e65100' : '#333';
+            const mutedColor = line.type === 'notes' ? '#81c784' : line.type === 'lyrics' ? '#ffab91' : '#999';
+            const segments = renderLineForView(line.text, line.type);
+            return (
+              <span key={i}>
+                {segments.map((seg, j) => (
+                  <span key={j} style={{ color: seg.hidden ? mutedColor : baseColor, fontWeight: seg.hidden ? 400 : 600 }}>
+                    {seg.text}
+                  </span>
+                ))}
+                {i < arr.length - 1 ? '\n' : ''}
               </span>
-              {i < arr.length - 1 ? '\n' : ''}
-            </span>
-          ))}
+            );
+          })}
         </div>
 
         {melody.author && (

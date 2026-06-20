@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { classifyLines } from '../utils/validation';
+import { renderLineWithHiddenNotes } from '../utils/hiddenNotes';
 import useTranslation from '../i18n/useTranslation';
 import './MelodyComposer.css';
 
@@ -46,9 +47,9 @@ function MelodyComposer({ notation, onChange, onValidationChange }) {
   const renderHighlightedContent = () => {
     if (!notation) return '';
     const lines = classifyLines(notation);
-    return lines.map((line, i) => {
+    return lines.map((line) => {
       const className = line.type === 'notes' ? 'highlight-notes' : line.type === 'lyrics' ? 'highlight-lyrics' : '';
-      return `<span class="${className}">${escapeHtml(line.text)}</span>`;
+      return `<span class="${className}">${renderLineWithHiddenNotes(line.text, line.type)}</span>`;
     }).join('\n');
   };
 
@@ -76,13 +77,6 @@ function MelodyComposer({ notation, onChange, onValidationChange }) {
       </div>
     </div>
   );
-}
-
-function escapeHtml(text) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
 }
 
 export default MelodyComposer;

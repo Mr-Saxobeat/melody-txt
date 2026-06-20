@@ -13,7 +13,7 @@ const SEMITONE_TO_FLAT = [
 ];
 
 const NOTE_REGEX = /^(sol|la|si|do|re|mi|fa|SOL|LA|SI|DO|RE|MI|FA|Sol|La|Si|Do|Re|Mi|Fa)(#|b)?(\d)?$/;
-const STRIP_SYMBOLS_REGEX = /^[|:\-./()]*(.*?)[|:\-./()]*$/;
+const STRIP_SYMBOLS_REGEX = /^[|:\-./()*]*(.*?)[|:\-./()*]*$/;
 
 export function stripSymbols(token) {
   if (!token) return '';

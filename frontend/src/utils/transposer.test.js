@@ -119,3 +119,20 @@ describe('transposeDown', () => {
     expect(transposeDown('re', 2)).toBe('do');
   });
 });
+
+describe('transposeNotes with hidden notes (asterisks)', () => {
+  test('transposes notes inside asterisks normally', () => {
+    const result = transposeNotes('do re *do mi* fa', 1);
+    expect(result).toBe('do# re# *do# fa* fa#');
+  });
+
+  test('leaves asterisks as non-note tokens', () => {
+    const result = transposeNotes('do *re* mi', 2);
+    expect(result).toBe('re *mi* fa#');
+  });
+
+  test('handles hidden notes with non-note text', () => {
+    const result = transposeNotes('do re *breath* mi', 1);
+    expect(result).toBe('do# re# *breath* fa');
+  });
+});
