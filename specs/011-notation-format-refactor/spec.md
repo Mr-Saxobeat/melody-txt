@@ -11,6 +11,9 @@
 
 - Q: Does "completely replaced" mean only reordering accidental/number, or also eliminating the case-based octave system? → A: Only reorder: accidental moves after octave number (`DO#3` → `DO3#`). Case-based octave system stays.
 - Q: Should notes without explicit octave number (e.g., `do#`, `REb`) be rewritten to include an explicit octave, or left as-is? → A: Leave as-is — only migrate tokens that have BOTH accidental AND octave number.
+- Q: How should octave shift buttons produce output with the new format? → A: When shifting results in a note with both octave and accidental, use new format. When shifting to default octave (4 for lowercase, 5 for uppercase), omit the number (e.g., `SOL3#` shifted down → `SOL#`; `do1b` shifted up → `dob`).
+- Q: Does the new format apply only to the composer or also to display on other pages? → A: The new format must be used consistently everywhere — composer, view music page, and shared music page.
+- Q: What octave numbers are valid for uppercase vs lowercase notes? → A: Lowercase notes accept numbers >= 1 (do1=C3, do2=C2). Uppercase notes accept numbers >= 3 only (DO3=C6, DO4=C7). Uppercase with 1 or 2 is invalid — those octaves are covered by the case system (DO=C5 is already one above do=C4).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -20,12 +23,12 @@ A musician composing new melodies writes notes using the new notation format whe
 
 **Why this priority**: This is the core behavioral change — the new canonical format must be recognized and accepted for any new music to be written.
 
-**Independent Test**: Can be fully tested by entering notes like `DO3#`, `RE3b`, `SOL2#`, `MI1b` into the melody composer and verifying they are accepted without validation errors.
+**Independent Test**: Can be fully tested by entering notes like `DO3#`, `RE3b`, `sol1b`, `mi1#` into the melody composer and verifying they are accepted without validation errors.
 
 **Acceptance Scenarios**:
 
 1. **Given** the melody composer is open, **When** the user types `DO3# RE3b MI2#`, **Then** the system accepts all tokens as valid notes without error.
-2. **Given** the melody composer is open, **When** the user types `sol1b FA2#`, **Then** the system recognizes both lowercase and uppercase variants with octave-before-accidental format.
+2. **Given** the melody composer is open, **When** the user types `sol1b FA2#`, **Then** the system rejects `FA2#` as invalid (uppercase number must be >= 3) while accepting `sol1b` as valid.
 3. **Given** a note with octave but no accidental like `DO3`, **When** validation is run, **Then** it continues to be accepted as valid (no regression).
 
 ---
@@ -58,6 +61,9 @@ When the system generates notation (e.g., transposition results), it outputs not
 
 1. **Given** a melody `do re mi`, **When** transposed up by 1 semitone, **Then** the result uses new format tokens (e.g., `do# re# fa` for octave-4 notes, `DO3#` for higher octaves).
 2. **Given** an instrument transposition that shifts notes across octave boundaries, **When** the transposition is performed, **Then** all output tokens with both octave and accidental use the new format.
+3. **Given** the melody composer is open with the typed note `SOL3#`, **When** the user clicks `- octave` to shift one octave below, **Then** the melody composer shows `SOL#` (octave 5 = uppercase with no number, accidental preserved).
+4. **Given** the melody composer is open with the typed note `do1b`, **When** the user clicks `+ octave` to shift one octave above, **Then** the melody composer shows `dob` (octave 4 = lowercase with no number, accidental preserved).
+5. **Given** a melody displayed on the view music or shared music page, **When** the notation contains notes in new format, **Then** they are rendered consistently using the same format rules as the composer.
 
 ---
 
@@ -66,18 +72,22 @@ When the system generates notation (e.g., transposition results), it outputs not
 - What happens when a note has an accidental but no octave number (e.g., `do#`, `REb`)? These remain valid — the format change only affects notes that have BOTH an octave number and an accidental.
 - What happens if a melody has already been partially migrated (some tokens in new format, some in old)? The migration must be idempotent — already-correct tokens are left unchanged.
 - Notes with only an octave and no accidental (`DO3`, `re1`) remain unchanged by this refactor.
+- Uppercase notes with octave numbers 1 or 2 (e.g., `DO1#`, `FA2#`, `RE2b`) are invalid — those octaves are already covered by the lowercase system (`do#`=C4, `DO#`=C5; there's no gap requiring `DO1#` or `DO2#`).
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST accept notes in the format `[syllable][octave][accidental]` (e.g., `DO3#`, `RE3b`, `sol2#`, `mi1b`) as valid notation.
+- **FR-001**: System MUST accept notes in the format `[syllable][octave][accidental]` (e.g., `DO3#`, `RE3b`, `sol1b`, `mi1#`) as valid notation.
 - **FR-002**: System MUST continue to accept notes without accidentals (`DO3`, `re1`) and notes without octave numbers (`do#`, `REb`) — no regression on existing valid formats.
 - **FR-003**: System MUST reject the old format `[syllable][accidental][octave]` (e.g., `DO#3`, `REb2`) as invalid when creating or editing new melodies.
+- **FR-010**: System MUST enforce octave number validity by case: lowercase notes accept numbers >= 1 (`do1`=C3, `do2`=C2); uppercase notes accept numbers >= 3 only (`DO3`=C6, `DO4`=C7). Uppercase with numbers 1 or 2 (e.g., `FA2#`, `DO1b`) MUST be rejected as invalid.
 - **FR-004**: System MUST migrate all existing stored melodies from old format to new format via a one-time data migration.
 - **FR-005**: System MUST produce output in the new canonical format when generating notation (transposition, instrument conversion).
 - **FR-006**: Migration MUST be idempotent — running it multiple times produces the same result.
 - **FR-007**: Migration MUST preserve lyrics lines, ignored symbols, and plain notes without octave/accidental combinations.
+- **FR-008**: The new notation format MUST be displayed consistently across all pages: melody composer, view music page, and shared music page.
+- **FR-009**: Octave shift operations (`+ octave`, `- octave`) MUST produce output in the new canonical format — when the resulting octave is the default (4 for lowercase, 5 for uppercase), the octave number is omitted (e.g., `SOL3#` → `SOL#` when shifted to octave 5).
 
 ### Key Entities
 

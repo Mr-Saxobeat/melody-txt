@@ -3,6 +3,8 @@
 import pytest
 from melodies.utils import (
     is_valid_solfege_notation,
+    is_valid_note_token,
+    migrate_notation_format,
     parse_solfege_notation,
     get_semitone_offset,
     transpose_solfege_to_key,
@@ -108,26 +110,55 @@ class TestExtendedNotation:
 
     def test_valid_uppercase_octave(self):
         assert is_valid_solfege_notation("DO RE MI") is True
-        assert is_valid_solfege_notation("DO1 RE1") is True
+        assert is_valid_solfege_notation("DO3 RE3") is True
 
     def test_valid_lowercase_octave(self):
         assert is_valid_solfege_notation("do1 re1 mi1") is True
         assert is_valid_solfege_notation("sol2") is True
 
-    def test_valid_combined_accidental_and_octave(self):
-        assert is_valid_solfege_notation("DO#1") is True
-        assert is_valid_solfege_notation("reb2") is True
-        assert is_valid_solfege_notation("sol#1 DO#") is True
+    def test_valid_new_format_octave_before_accidental(self):
+        assert is_valid_note_token("DO3#") is True
+        assert is_valid_note_token("RE3b") is True
+        assert is_valid_note_token("sol1b") is True
+        assert is_valid_note_token("mi1#") is True
+        assert is_valid_note_token("DO4#") is True
+
+    def test_old_format_accidental_before_octave_rejected(self):
+        assert is_valid_note_token("DO#3") is False
+        assert is_valid_note_token("REb2") is False
+        assert is_valid_note_token("FA#1") is False
+        assert is_valid_note_token("sol#1") is False
+
+    def test_octave_number_validation_uppercase_rejects_1_and_2(self):
+        assert is_valid_note_token("FA2#") is False
+        assert is_valid_note_token("DO1b") is False
+        assert is_valid_note_token("DO1") is False
+        assert is_valid_note_token("RE2") is False
+        assert is_valid_note_token("DO3#") is True
+        assert is_valid_note_token("do1b") is True
+        assert is_valid_note_token("do2#") is True
 
     def test_text_with_non_notes_treated_as_lyrics(self):
         assert is_valid_solfege_notation("dox") is True
         assert is_valid_solfege_notation("re##") is True
 
     def test_mixed_valid_notation(self):
-        assert is_valid_solfege_notation("do DO do1 DO1 do# reb") is True
+        assert is_valid_solfege_notation("do DO do1 DO3 do# reb") is True
 
     def test_backward_compatible_plain_notation(self):
         assert is_valid_solfege_notation("do re mi fa sol la si") is True
+
+    def test_no_regression_accidental_without_octave(self):
+        assert is_valid_note_token("do#") is True
+        assert is_valid_note_token("REb") is True
+        assert is_valid_note_token("SOL#") is True
+        assert is_valid_note_token("fab") is True
+
+    def test_no_regression_octave_without_accidental(self):
+        assert is_valid_note_token("DO3") is True
+        assert is_valid_note_token("re1") is True
+        assert is_valid_note_token("do") is True
+        assert is_valid_note_token("DO") is True
 
 
 class TestSemitoneOffset:
@@ -182,3 +213,41 @@ class TestTransposeSolfegeToKey:
         expected_pitches = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4']
         for i, expected in enumerate(expected_pitches):
             assert result[i]['pitch'] == expected
+
+
+class TestMigrateNotationFormat:
+    """Test notation format migration from old to new."""
+
+    def test_migrates_old_format_to_new(self):
+        assert migrate_notation_format("DO#3 REb2") == "DO3# RE2b"
+
+    def test_migrates_mixed_content(self):
+        assert migrate_notation_format("do re DO#3 mi") == "do re DO3# mi"
+
+    def test_preserves_plain_notes(self):
+        assert migrate_notation_format("do re mi fa sol") == "do re mi fa sol"
+
+    def test_preserves_notes_without_octave(self):
+        assert migrate_notation_format("do# REb SOL#") == "do# REb SOL#"
+
+    def test_preserves_notes_without_accidental(self):
+        assert migrate_notation_format("DO3 re1 mi") == "DO3 re1 mi"
+
+    def test_preserves_lyrics_lines(self):
+        text = "DO#3 RE#3\nHappy birthday\nFA#1"
+        expected = "DO3# RE3#\nHappy birthday\nFA1#"
+        assert migrate_notation_format(text) == expected
+
+    def test_idempotent(self):
+        text = "DO3# RE2b FA1#"
+        assert migrate_notation_format(text) == text
+
+    def test_handles_empty_input(self):
+        assert migrate_notation_format("") == ""
+        assert migrate_notation_format(None) is None
+
+    def test_handles_lowercase_old_format(self):
+        assert migrate_notation_format("sol#1 do#2") == "sol1# do2#"
+
+    def test_melodytab_notation(self):
+        assert migrate_notation_format("FA#3 SOL#3 LA#3") == "FA3# SOL3# LA3#"

@@ -19,7 +19,8 @@ describe('isValidSolfege', () => {
 
   test('accepts accidentals and octave markers', () => {
     expect(isValidSolfege('do# re# fa')).toBe(true);
-    expect(isValidSolfege('DO1 sol#')).toBe(true);
+    expect(isValidSolfege('DO3 sol#')).toBe(true);
+    expect(isValidSolfege('DO3# RE3b')).toBe(true);
   });
 
   test('returns false for pure lyrics (no note lines)', () => {

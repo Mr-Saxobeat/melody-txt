@@ -7,9 +7,9 @@ import string
 # Valid solfege syllables
 VALID_SOLFEGE_SYLLABLES = {'do', 're', 'mi', 'fa', 'sol', 'la', 'si'}
 
-# Regex for extended notation: syllable (case-insensitive) + optional accidental + optional octave number
+# Regex for extended notation: syllable (case-insensitive) + optional octave number + optional accidental
 EXTENDED_NOTE_REGEX = re.compile(
-    r'^(sol|la|si|do|re|mi|fa)(#|b)?(\d)?$',
+    r'^(sol|la|si|do|re|mi|fa)(\d)?(#|b)?$',
     re.IGNORECASE
 )
 
@@ -36,7 +36,15 @@ def is_valid_note_token(token):
     stripped = strip_symbols(token)
     if not stripped:
         return False
-    return EXTENDED_NOTE_REGEX.match(stripped) is not None
+    match = EXTENDED_NOTE_REGEX.match(stripped)
+    if not match:
+        return False
+    syllable_raw = match.group(1)
+    number_str = match.group(2) or ''
+    is_upper = syllable_raw[0].isupper()
+    if is_upper and number_str and int(number_str) in (1, 2):
+        return False
+    return True
 
 
 def is_note_line(line):
@@ -226,6 +234,61 @@ def get_invalid_syllables(text):
         return []
 
 
+# Regex to match old format tokens: syllable + accidental + octave number
+OLD_FORMAT_REGEX = re.compile(
+    r'(sol|la|si|do|re|mi|fa)(#|b)(\d)',
+    re.IGNORECASE
+)
+
+# Combined regex that matches EITHER old or new format (for migration line detection)
+_MIGRATION_NOTE_REGEX = re.compile(
+    r'^(sol|la|si|do|re|mi|fa)(?:(\d)?(#|b)?|(#|b)(\d))$',
+    re.IGNORECASE
+)
+
+
+def _is_migration_note_line(line):
+    """Detect note lines accepting both old and new format (for migration only)."""
+    if not line or not line.strip():
+        return False
+    tokens = line.strip().split()
+    non_ignored = [t for t in tokens if not is_ignored_symbol(t)]
+    if not non_ignored:
+        return False
+    note_count = sum(1 for t in non_ignored if _is_migration_note_token(t))
+    return note_count > len(non_ignored) / 2
+
+
+def _is_migration_note_token(token):
+    """Validate a token accepting both old and new format (for migration only)."""
+    stripped = strip_symbols(token)
+    if not stripped:
+        return False
+    return _MIGRATION_NOTE_REGEX.match(stripped) is not None
+
+
+def migrate_notation_format(text):
+    """
+    Migrate notation text from old format [syllable][accidental][octave]
+    to new format [syllable][octave][accidental].
+
+    Only transforms tokens on note lines. Lyrics lines are preserved.
+    Idempotent: tokens already in new format are unaffected.
+    """
+    if not text or not text.strip():
+        return text
+
+    lines = text.split('\n')
+    result = []
+    for line in lines:
+        if not _is_migration_note_line(line):
+            result.append(line)
+            continue
+        migrated_line = OLD_FORMAT_REGEX.sub(r'\1\3\2', line)
+        result.append(migrated_line)
+    return '\n'.join(result)
+
+
 def transpose_between_instruments(notation, from_instrument, to_instrument):
     """
     Transpose notation between two instruments using their concert pitch offsets.
@@ -265,8 +328,8 @@ def _transpose_notation_text(text, semitones):
                 transposed_tokens.append(token)
                 continue
             syllable_raw = match.group(1)
-            accidental = match.group(2) or ''
-            number_str = match.group(3) or ''
+            number_str = match.group(2) or ''
+            accidental = match.group(3) or ''
 
             is_upper = syllable_raw[0].isupper()
             syllable = syllable_raw.lower()
@@ -299,10 +362,10 @@ def _transpose_notation_text(text, semitones):
                 result_token = new_syllable.capitalize() + new_acc
             elif new_octave < 4:
                 num = 4 - new_octave
-                result_token = new_syllable + new_acc + str(num)
+                result_token = new_syllable + str(num) + new_acc
             else:
                 num = new_octave - 3
-                result_token = new_syllable.capitalize() + new_acc + str(num)
+                result_token = new_syllable.capitalize() + str(num) + new_acc
 
             transposed_tokens.append(result_token)
         result.append(' '.join(transposed_tokens))

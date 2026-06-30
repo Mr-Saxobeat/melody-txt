@@ -14,7 +14,7 @@ describe('transposeNotes', () => {
   });
 
   test('transposes down whole step', () => {
-    expect(transposeNotes('do re mi', -2)).toBe('sib1 do re');
+    expect(transposeNotes('do re mi', -2)).toBe('si1b do re');
   });
 
   test('cumulative transposition: up whole step twice = up 4 semitones', () => {

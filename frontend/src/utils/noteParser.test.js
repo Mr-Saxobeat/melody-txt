@@ -26,9 +26,11 @@ describe('parseNote', () => {
     expect(parseNote('DO5')).toMatchObject({ syllable: 'do', octave: 8, semitone: 96 });
   });
 
-  test('parses old notation DO1/DO2 with backward compatibility', () => {
-    expect(parseNote('DO1')).toMatchObject({ syllable: 'do', octave: 6, semitone: 72 });
-    expect(parseNote('DO2')).toMatchObject({ syllable: 'do', octave: 7, semitone: 84 });
+  test('rejects uppercase with octave number 1 or 2', () => {
+    expect(parseNote('DO1')).toBeNull();
+    expect(parseNote('DO2')).toBeNull();
+    expect(parseNote('FA2')).toBeNull();
+    expect(parseNote('RE1')).toBeNull();
   });
 
   test('parses sharps', () => {
@@ -41,10 +43,27 @@ describe('parseNote', () => {
     expect(parseNote('mib')).toMatchObject({ syllable: 'mi', accidental: 'b', octave: 4, semitone: 51 });
   });
 
-  test('parses combined accidental + octave', () => {
-    expect(parseNote('DO#3')).toMatchObject({ syllable: 'do', accidental: '#', octave: 6, semitone: 73 });
-    expect(parseNote('DO#1')).toMatchObject({ syllable: 'do', accidental: '#', octave: 6, semitone: 73 });
-    expect(parseNote('reb2')).toMatchObject({ syllable: 're', accidental: 'b', octave: 2, semitone: 25 });
+  test('parses new format: octave before accidental', () => {
+    expect(parseNote('DO3#')).toMatchObject({ syllable: 'do', accidental: '#', octave: 6, semitone: 73 });
+    expect(parseNote('RE3b')).toMatchObject({ syllable: 're', accidental: 'b', octave: 6, semitone: 73 });
+    expect(parseNote('sol1b')).toMatchObject({ syllable: 'sol', accidental: 'b', octave: 3, semitone: 42 });
+    expect(parseNote('mi1#')).toMatchObject({ syllable: 'mi', accidental: '#', octave: 3, semitone: 41 });
+  });
+
+  test('rejects old format: accidental before octave', () => {
+    expect(parseNote('DO#3')).toBeNull();
+    expect(parseNote('REb2')).toBeNull();
+    expect(parseNote('FA#1')).toBeNull();
+  });
+
+  test('rejects uppercase with octave 1 or 2 plus accidental', () => {
+    expect(parseNote('FA2#')).toBeNull();
+    expect(parseNote('DO1b')).toBeNull();
+  });
+
+  test('parses lowercase octave + accidental (new format)', () => {
+    expect(parseNote('re2b')).toMatchObject({ syllable: 're', accidental: 'b', octave: 2, semitone: 25 });
+    expect(parseNote('do1#')).toMatchObject({ syllable: 'do', accidental: '#', octave: 3, semitone: 37 });
   });
 
   test('strips leading/trailing symbols before parsing', () => {

@@ -12,7 +12,7 @@ const SEMITONE_TO_FLAT = [
   'do', 'reb', 're', 'mib', 'mi', 'fa', 'solb', 'sol', 'lab', 'la', 'sib', 'si',
 ];
 
-const NOTE_REGEX = /^(sol|la|si|do|re|mi|fa|SOL|LA|SI|DO|RE|MI|FA|Sol|La|Si|Do|Re|Mi|Fa)(#|b)?(\d)?$/;
+const NOTE_REGEX = /^(sol|la|si|do|re|mi|fa|SOL|LA|SI|DO|RE|MI|FA|Sol|La|Si|Do|Re|Mi|Fa)(\d)?(#|b)?$/;
 const STRIP_SYMBOLS_REGEX = /^[|:\-./()*]*(.*?)[|:\-./()*]*$/;
 
 export function stripSymbols(token) {
@@ -33,7 +33,7 @@ export function parseNote(token) {
   const match = stripped.match(NOTE_REGEX);
   if (!match) return null;
 
-  const [, syllableRaw, accidental = '', numberStr] = match;
+  const [, syllableRaw, numberStr, accidental = ''] = match;
 
   const isUpperCase = syllableRaw[0] === syllableRaw[0].toUpperCase() &&
                       syllableRaw[0] !== syllableRaw[0].toLowerCase();
@@ -44,12 +44,16 @@ export function parseNote(token) {
   const baseSemitone = SYLLABLE_TO_SEMITONE[syllable];
   if (baseSemitone === undefined) return null;
 
+  const number = numberStr ? parseInt(numberStr, 10) : 0;
+
+  // Octave number validation: uppercase rejects 1 or 2
+  if (isUpperCase && number >= 1 && number <= 2) return null;
+
   let accidentalOffset = 0;
   if (accidental === '#') accidentalOffset = 1;
   else if (accidental === 'b') accidentalOffset = -1;
 
   let octave;
-  const number = numberStr ? parseInt(numberStr, 10) : 0;
 
   if (isUpperCase) {
     octave = number >= 3 ? number + 3 : 5 + number;
@@ -78,10 +82,10 @@ export function noteToString(semitone, preferSharp = true) {
     notation = syllable.toUpperCase() + accidental;
   } else if (octave < 4) {
     const num = 4 - octave;
-    notation = syllable + accidental + num;
+    notation = syllable + num + accidental;
   } else {
     const num = octave - 3;
-    notation = syllable.toUpperCase() + accidental + num;
+    notation = syllable.toUpperCase() + num + accidental;
   }
 
   return notation;
