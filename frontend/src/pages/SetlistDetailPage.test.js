@@ -5,6 +5,8 @@ import SetlistDetailPage from './SetlistDetailPage';
 import setlistService from '../services/setlistService';
 import melodyService from '../services/melodyService';
 
+jest.mock('jspdf', () => ({ jsPDF: jest.fn() }));
+jest.mock('jszip', () => jest.fn());
 jest.mock('../services/setlistService');
 jest.mock('../services/melodyService');
 jest.mock('../services/api', () => ({

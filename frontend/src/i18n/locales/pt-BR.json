@@ -130,6 +130,9 @@
     "remove": "Remover",
     "dragToReorder": "Arraste para reordenar",
     "clickToEditTitle": "Clique para editar o título",
-    "by": "por {name}"
+    "by": "por {name}",
+    "exportPdf": "Exportar PDF",
+    "exporting": "Exportando...",
+    "exportError": "Erro ao exportar. Tente novamente."
   }
 }

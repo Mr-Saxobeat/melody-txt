@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import setlistService from '../services/setlistService';
 import melodyService from '../services/melodyService';
+import { exportSetlistToPdf } from '../services/pdfExportService';
 import { copyToClipboard } from '../utils/clipboard';
 import useDebounce from '../hooks/useDebounce';
 import useTranslation from '../i18n/useTranslation';
@@ -26,6 +27,8 @@ function SetlistDetailPage({ readOnly = false }) {
   const touchDragging = useRef(false);
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [overIndex, setOverIndex] = useState(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState(null);
 
   const fetchSetlist = useCallback(async () => {
     try {
@@ -184,6 +187,21 @@ function SetlistDetailPage({ readOnly = false }) {
     });
   };
 
+  const handleExportPdf = async () => {
+    setExporting(true);
+    setExportError(null);
+    try {
+      const melodies = await Promise.all(
+        setlist.entries.map((entry) => melodyService.getSharedMelody(entry.melody_share_id))
+      );
+      await exportSetlistToPdf(setlist, melodies);
+    } catch (err) {
+      setExportError(t('setlistDetail.exportError'));
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleTogglePublic = async () => {
     await setlistService.updateSetlist(id, { title: setlist.title, is_public: !setlist.is_public });
     fetchSetlist();
@@ -211,13 +229,18 @@ function SetlistDetailPage({ readOnly = false }) {
           </h1>
         )}
         {!readOnly && (
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
             <button className="btn-secondary" onClick={handleTogglePublic} style={{ fontSize: '0.85rem' }}>
               {setlist.is_public ? `🔓 ${t('setlistDetail.public')}` : `🔒 ${t('setlistDetail.private')}`}
             </button>
             <button className="btn-share" onClick={handleShare}>
               {copySuccess ? t('setlistDetail.linkCopied') : t('setlistDetail.share')}
             </button>
+            {setlist.entries && setlist.entries.length > 0 && (
+              <button className="btn-secondary" onClick={handleExportPdf} disabled={exporting} style={{ fontSize: '0.85rem' }}>
+                {exporting ? t('setlistDetail.exporting') : t('setlistDetail.exportPdf')}
+              </button>
+            )}
             <button className="btn-primary" onClick={loadMelodies}>
               {t('setlistDetail.addMelody')}
             </button>
@@ -227,6 +250,12 @@ function SetlistDetailPage({ readOnly = false }) {
           <p style={{ color: '#666', margin: 0 }}>{t('setlistDetail.by', { name: setlist.author.username })}</p>
         )}
       </div>
+
+      {exportError && (
+        <div style={{ padding: '8px 12px', marginBottom: '12px', background: '#ffebee', color: '#c62828', borderRadius: '6px', fontSize: '0.9rem' }}>
+          {exportError}
+        </div>
+      )}
 
       {showAddPicker && (
         <div className="save-dialog-overlay">
