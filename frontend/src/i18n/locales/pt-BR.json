@@ -1,9 +1,9 @@
 {
   "nav": {
-    "setlists": "Setlists",
-    "compose": "Compor",
-    "myMelodies": "Melodias",
-    "mySetlists": "Setlists",
+    "allMelodies": "Todas Melodias",
+    "allSetlists": "Todos Setlists",
+    "myMelodies": "Minhas Melodias",
+    "mySetlists": "Meus Setlists",
     "login": "Entrar",
     "logout": "Sair"
   },

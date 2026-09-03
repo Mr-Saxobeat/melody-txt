@@ -33,7 +33,7 @@ function AppContent() {
     <div className="App">
       <Header siteTitle={siteTitle} />
           <Routes>
-            <Route path="/" element={<Navigate to="/setlists" replace />} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/compose" element={<ProtectedRoute><ComposerPage /></ProtectedRoute>} />
             <Route path="/auth" element={<AuthPage />} />
             <Route

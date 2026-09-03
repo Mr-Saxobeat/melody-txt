@@ -31,8 +31,8 @@ function Header({ siteTitle = 'Melody Txt' }) {
           <span className={`hamburger-icon ${menuOpen ? 'open' : ''}`} />
         </button>
         <nav className={`header-nav ${menuOpen ? 'nav-open' : ''}`}>
-          <Link to="/setlists" className="nav-link" onClick={closeMenu}>{t('nav.setlists')}</Link>
-          <Link to="/compose" className="nav-link" onClick={closeMenu}>{isAuthenticated && user ? user.username : t('nav.compose')}</Link>
+          <Link to="/" className="nav-link" onClick={closeMenu}>{t('nav.allMelodies')}</Link>
+          <Link to="/setlists" className="nav-link" onClick={closeMenu}>{t('nav.allSetlists')}</Link>
           {isAuthenticated ? (
             <>
               <Link to="/my-melodies" className="nav-link" onClick={closeMenu}>{t('nav.myMelodies')}</Link>
