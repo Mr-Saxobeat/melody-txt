@@ -50,10 +50,9 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, clear tokens and redirect to login
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/auth';
+        localStorage.removeItem('username');
         return Promise.reject(refreshError);
       }
     }

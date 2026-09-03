@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import useSiteSettings from './hooks/useSiteSettings';
 import HomePage from './pages/HomePage';
@@ -33,7 +33,7 @@ function AppContent() {
     <div className="App">
       <Header siteTitle={siteTitle} />
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<Navigate to="/setlists" replace />} />
             <Route path="/compose" element={<ProtectedRoute><ComposerPage /></ProtectedRoute>} />
             <Route path="/auth" element={<AuthPage />} />
             <Route
