@@ -49,7 +49,14 @@
     "piano": "Piano",
     "saxophone": "Saxofone",
     "trumpet": "Trompete",
-    "trombone": "Trombone"
+    "trombone": "Trombone",
+    "deleteConfirm": {
+      "title": "Excluir Instrumento",
+      "message": "Tem certeza que deseja excluir a aba de {name}?",
+      "confirm": "Excluir",
+      "cancel": "Cancelar",
+      "error": "Falha ao excluir a aba. Tente novamente."
+    }
   },
   "transpose": {
     "halfStep": "meio tom",

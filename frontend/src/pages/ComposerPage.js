@@ -5,6 +5,7 @@ import MelodyComposer from '../components/MelodyComposer';
 import TransposeControls from '../components/TransposeControls';
 import InstrumentTabs from '../components/InstrumentTabs';
 import InstrumentSelectModal from '../components/InstrumentSelectModal';
+import ConfirmModal from '../components/ConfirmModal';
 import FlatToggle from '../components/FlatToggle';
 import { useAuth } from '../hooks/useAuth';
 import melodyService from '../services/melodyService';
@@ -28,6 +29,8 @@ function ComposerPage() {
   const [showSourceModal, setShowSourceModal] = useState(false);
   const [sourceInstrument, setSourceInstrument] = useState(null);
   const [originalTabs, setOriginalTabs] = useState(null);
+  const [pendingDeleteTabId, setPendingDeleteTabId] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -147,11 +150,38 @@ function ComposerPage() {
 
   const handleDeleteTab = (tabId) => {
     if (tabs.length <= 1) return;
+    setPendingDeleteTabId(tabId);
+    setDeleteError(null);
+  };
+
+  const confirmDeleteTab = async () => {
+    const tabId = pendingDeleteTabId;
+    if (!tabId) return;
+    setPendingDeleteTabId(null);
+
+    const snapshot = [...tabs];
     const newTabs = tabs.filter((t) => t.id !== tabId);
     setTabs(newTabs);
     if (activeTabId === tabId) {
       setActiveTabId(newTabs[0].id);
     }
+
+    const isLocal = typeof tabId === 'string' && tabId.startsWith('local-');
+    if (!isLocal && editingId) {
+      try {
+        await melodyService.deleteTab(editingId, tabId);
+      } catch {
+        setTabs(snapshot);
+        if (activeTabId === tabId) {
+          setActiveTabId(tabId);
+        }
+        setDeleteError(t('instrument.deleteConfirm.error'));
+      }
+    }
+  };
+
+  const cancelDeleteTab = () => {
+    setPendingDeleteTabId(null);
   };
 
   const handleSuffixChange = (tabId, suffix) => {
@@ -289,6 +319,24 @@ function ComposerPage() {
             onDeleteTab={handleDeleteTab}
             onSuffixChange={handleSuffixChange}
           />
+          {deleteError && (
+            <p className="form-error" style={{ marginBottom: '8px' }}>{deleteError}</p>
+          )}
+          {pendingDeleteTabId && (
+            <ConfirmModal
+              title={t('instrument.deleteConfirm.title')}
+              message={t('instrument.deleteConfirm.message', {
+                name: (() => {
+                  const tab = tabs.find((tb) => tb.id === pendingDeleteTabId);
+                  return tab ? t(`instrument.${tab.instrument}`) : '';
+                })(),
+              })}
+              confirmLabel={t('instrument.deleteConfirm.confirm')}
+              cancelLabel={t('instrument.deleteConfirm.cancel')}
+              onConfirm={confirmDeleteTab}
+              onCancel={cancelDeleteTab}
+            />
+          )}
           <MelodyComposer
             notation={notation}
             onChange={updateActiveNotation}

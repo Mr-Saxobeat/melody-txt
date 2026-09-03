@@ -66,7 +66,7 @@ function InstrumentTabs({ tabs, activeTabId, onTabSelect, onAddTab, onDeleteTab,
               &times;
             </button>
           )}
-          {tabs.length < 10 && (
+          {tabs.length < 20 && (
             <button className="tab-add" onClick={handleAddClick} aria-label="Add instrument tab">
               +
             </button>
@@ -114,7 +114,7 @@ function InstrumentTabs({ tabs, activeTabId, onTabSelect, onAddTab, onDeleteTab,
               )}
             </div>
           ))}
-          {tabs.length < 10 && (
+          {tabs.length < 20 && (
             <button className="tab-add" onClick={handleAddClick} aria-label="Add instrument tab">
               +
             </button>
