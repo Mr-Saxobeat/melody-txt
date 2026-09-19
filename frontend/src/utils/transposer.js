@@ -1,4 +1,5 @@
 import { parseNote, noteToString, stripSymbols } from './noteParser';
+import { parseLineSegments } from './lineTokenizer';
 
 const IGNORED_SYMBOL_REGEX = /^[|:\-./()0-9,;]+$/;
 const REPEAT_MARKER_REGEX = /^\(?(\d+[x,)]*)\)?$/i;
@@ -16,6 +17,56 @@ export function isNoteLine(line) {
   return noteCount > nonIgnored.length / 2;
 }
 
+function transposeTokensInText(text, semitones, useSharp) {
+  return text.replace(/\S+/g, (token) => {
+    const parsed = parseNote(token);
+    if (!parsed) return token;
+    const stripped = stripSymbols(token);
+    const prefixLen = token.indexOf(stripped);
+    const prefix = token.slice(0, prefixLen);
+    const suffix = token.slice(prefixLen + stripped.length);
+    const newSemitone = parsed.semitone + semitones;
+    return prefix + noteToString(newSemitone, useSharp) + suffix;
+  });
+}
+
+function hasQuotes(line) {
+  return line.indexOf('"') !== -1;
+}
+
+function transposeLineWithQuotes(line, semitones, useSharp) {
+  const segments = parseLineSegments(line);
+  const notationText = segments.filter((s) => s.type === 'notation').map((s) => s.text).join(' ');
+  if (!notationText.trim() || !isNoteLine(notationText)) return line;
+
+  let result = '';
+  let current = '';
+  let inQuote = false;
+
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') {
+      if (!inQuote) {
+        result += transposeTokensInText(current, semitones, useSharp);
+        current = '';
+        result += '"';
+        inQuote = true;
+      } else {
+        result += current + '"';
+        current = '';
+        inQuote = false;
+      }
+    } else {
+      current += line[i];
+    }
+  }
+
+  if (current) {
+    result += inQuote ? current : transposeTokensInText(current, semitones, useSharp);
+  }
+
+  return result;
+}
+
 export function transposeNotes(notationString, semitones, preferSharp = null) {
   if (!notationString || !notationString.trim()) return notationString;
 
@@ -23,21 +74,56 @@ export function transposeNotes(notationString, semitones, preferSharp = null) {
   const lines = notationString.split('\n');
 
   const transposedLines = lines.map((line) => {
+    if (hasQuotes(line)) {
+      return transposeLineWithQuotes(line, semitones, useSharp);
+    }
     if (!isNoteLine(line)) return line;
 
-    return line.replace(/\S+/g, (token) => {
-      const parsed = parseNote(token);
-      if (!parsed) return token;
-      const stripped = stripSymbols(token);
-      const prefixLen = token.indexOf(stripped);
-      const prefix = token.slice(0, prefixLen);
-      const suffix = token.slice(prefixLen + stripped.length);
-      const newSemitone = parsed.semitone + semitones;
-      return prefix + noteToString(newSemitone, useSharp) + suffix;
-    });
+    return transposeTokensInText(line, semitones, useSharp);
   });
 
   return transposedLines.join('\n');
+}
+
+function convertTokensInText(text, preferSharp) {
+  return text.replace(/\S+/g, (token) => {
+    const parsed = parseNote(token);
+    if (!parsed) return token;
+    const stripped = stripSymbols(token);
+    const prefixLen = token.indexOf(stripped);
+    const prefix = token.slice(0, prefixLen);
+    const suffix = token.slice(prefixLen + stripped.length);
+    return prefix + noteToString(parsed.semitone, preferSharp) + suffix;
+  });
+}
+
+function convertLineWithQuotes(line, preferSharp) {
+  let result = '';
+  let current = '';
+  let inQuote = false;
+
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') {
+      if (!inQuote) {
+        result += convertTokensInText(current, preferSharp);
+        current = '';
+        result += '"';
+        inQuote = true;
+      } else {
+        result += current + '"';
+        current = '';
+        inQuote = false;
+      }
+    } else {
+      current += line[i];
+    }
+  }
+
+  if (current) {
+    result += inQuote ? current : convertTokensInText(current, preferSharp);
+  }
+
+  return result;
 }
 
 export function convertAccidentals(notationString, preferSharp) {
@@ -45,17 +131,9 @@ export function convertAccidentals(notationString, preferSharp) {
 
   const lines = notationString.split('\n');
   const converted = lines.map((line) => {
+    if (hasQuotes(line)) return convertLineWithQuotes(line, preferSharp);
     if (!isNoteLine(line)) return line;
-
-    return line.replace(/\S+/g, (token) => {
-      const parsed = parseNote(token);
-      if (!parsed) return token;
-      const stripped = stripSymbols(token);
-      const prefixLen = token.indexOf(stripped);
-      const prefix = token.slice(0, prefixLen);
-      const suffix = token.slice(prefixLen + stripped.length);
-      return prefix + noteToString(parsed.semitone, preferSharp) + suffix;
-    });
+    return convertTokensInText(line, preferSharp);
   });
 
   return converted.join('\n');

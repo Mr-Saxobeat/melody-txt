@@ -97,6 +97,41 @@ class TestMelodyModel:
 
 
 @pytest.mark.django_db
+class TestMelodyModelWithInlineLyrics:
+
+    @pytest.fixture
+    def user(self):
+        return User.objects.create_user(
+            username='lyricsuser',
+            email='lyrics@example.com',
+            password='TestPass123',
+        )
+
+    def test_note_count_excludes_quoted_lyrics(self, user):
+        melody = Melody(
+            user=user,
+            title='Mixed',
+            notation='sol sol "Parabéns pra você" DO si',
+        )
+        melody.save()
+        assert melody.note_count == 4
+
+    def test_note_count_with_only_notes_unchanged(self, user):
+        melody = Melody(user=user, title='Pure', notation='do re mi fa sol')
+        melody.save()
+        assert melody.note_count == 5
+
+    def test_duration_reflects_excluded_lyrics(self, user):
+        melody = Melody(
+            user=user,
+            title='Mixed Duration',
+            notation='sol sol "lyrics" DO si',
+        )
+        melody.save()
+        assert melody.duration_seconds == 2.0
+
+
+@pytest.mark.django_db
 class TestGenerateShareId:
 
     def test_generates_12_char_string(self):

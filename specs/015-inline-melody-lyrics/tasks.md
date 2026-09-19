@@ -19,8 +19,8 @@
 
 **Purpose**: No new project initialization needed — the project already exists. This phase creates the single new file that all stories depend on.
 
-- [ ] T001 Create line tokenizer test file in `frontend/src/utils/lineTokenizer.test.js` with tests for: single notation segment (no quotes), single lyrics segment (entire line quoted), mixed segments (`sol sol "text" DO`), lyrics-first (`"text" DO DO "text2"`), unmatched trailing quote, empty quoted segment (`""`), empty string input, and line with only quotes
-- [ ] T002 Create line tokenizer `parseLineSegments()` in `frontend/src/utils/lineTokenizer.js` — left-to-right scan toggling at double-quote characters, returning `[{ text, type }]` segments per the contract in `contracts/frontend-api.md`
+- [x] T001 Create line tokenizer test file in `frontend/src/utils/lineTokenizer.test.js` with tests for: single notation segment (no quotes), single lyrics segment (entire line quoted), mixed segments (`sol sol "text" DO`), lyrics-first (`"text" DO DO "text2"`), unmatched trailing quote, empty quoted segment (`""`), empty string input, and line with only quotes
+- [x] T002 Create line tokenizer `parseLineSegments()` in `frontend/src/utils/lineTokenizer.js` — left-to-right scan toggling at double-quote characters, returning `[{ text, type }]` segments per the contract in `contracts/frontend-api.md`
 
 **Checkpoint**: `parseLineSegments` passes all tests — the foundational building block is ready.
 
@@ -32,10 +32,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 Add tests to `frontend/src/utils/validation.test.js` for: `classifyLines` returning `type: 'mixed'` with `segments` array for a line with quotes and notation, `classifyLines` returning `type: 'lyrics'` for a line with only quoted text and no notation, `classifyLines` preserving existing behavior for pure note lines and pure lyrics lines (regression), `parseNotes` excluding tokens inside quoted segments, `countNotes` excluding quoted lyrics from count, `estimateDuration` reflecting updated count
-- [ ] T004 Update `classifyLines()` in `frontend/src/utils/validation.js` to use `parseLineSegments` — classify lines with quotes as `'mixed'` (if notation segments contain valid notes per `isNoteLine`) or `'lyrics'` (if no notation tokens outside quotes); attach `segments` array to mixed lines
-- [ ] T005 Update `parseNotes()` in `frontend/src/utils/validation.js` to skip quoted segments — for note lines use existing logic, for mixed lines extract tokens only from notation segments, for lyrics lines skip entirely
-- [ ] T006 Update `getInvalidSyllables()` in `frontend/src/utils/validation.js` to skip quoted segments — same approach as `parseNotes`
+- [x] T003 Add tests to `frontend/src/utils/validation.test.js` for: `classifyLines` returning `type: 'mixed'` with `segments` array for a line with quotes and notation, `classifyLines` returning `type: 'lyrics'` for a line with only quoted text and no notation, `classifyLines` preserving existing behavior for pure note lines and pure lyrics lines (regression), `parseNotes` excluding tokens inside quoted segments, `countNotes` excluding quoted lyrics from count, `estimateDuration` reflecting updated count
+- [x] T004 Update `classifyLines()` in `frontend/src/utils/validation.js` to use `parseLineSegments` — classify lines with quotes as `'mixed'` (if notation segments contain valid notes per `isNoteLine`) or `'lyrics'` (if no notation tokens outside quotes); attach `segments` array to mixed lines
+- [x] T005 Update `parseNotes()` in `frontend/src/utils/validation.js` to skip quoted segments — for note lines use existing logic, for mixed lines extract tokens only from notation segments, for lyrics lines skip entirely
+- [x] T006 Update `getInvalidSyllables()` in `frontend/src/utils/validation.js` to skip quoted segments — same approach as `parseNotes`
 
 **Checkpoint**: Foundation ready — `classifyLines`, `parseNotes`, `countNotes` all handle mixed lines correctly. User story implementation can now begin.
 
@@ -49,19 +49,19 @@
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Add tests to `frontend/src/utils/transposer.test.js` for: `transposeNotes` on a mixed line preserves quoted segments verbatim, `transposeNotes` transposes only notation segments, `convertAccidentals` preserves quoted segments, `isNoteLine` returns false for a line that is entirely quoted lyrics
-- [ ] T008 [P] [US1] Add tests to `frontend/src/components/MelodyComposer.test.js` for: rendering a mixed line produces separate spans for notation (class `highlight-notes`) and lyrics (class `highlight-lyrics`) segments, rendering pure note/lyrics lines is unchanged (regression), hidden notes inside notation segments of a mixed line still render with hidden class
-- [ ] T009 [P] [US1] Add tests to `backend/tests/test_strip_quoted_segments.py` for: `strip_quoted_segments` removes quoted text and quotes, preserves unquoted text, handles no-quotes input, handles only-quotes input, handles unmatched trailing quote
-- [ ] T010 [P] [US1] Add tests to `backend/tests/test_melody_model.py` (or existing test file) for: `Melody.save()` sets correct `note_count` when notation contains quoted lyrics, `note_count` is zero when notation is only quoted lyrics (this should fail validation in `clean()`)
+- [x] T007 [P] [US1] Add tests to `frontend/src/utils/transposer.test.js` for: `transposeNotes` on a mixed line preserves quoted segments verbatim, `transposeNotes` transposes only notation segments, `convertAccidentals` preserves quoted segments, `isNoteLine` returns false for a line that is entirely quoted lyrics
+- [x] T008 [P] [US1] Add tests to `frontend/src/components/MelodyComposer.test.js` for: rendering a mixed line produces separate spans for notation (class `highlight-notes`) and lyrics (class `highlight-lyrics`) segments, rendering pure note/lyrics lines is unchanged (regression), hidden notes inside notation segments of a mixed line still render with hidden class
+- [x] T009 [P] [US1] Add tests to `backend/tests/test_strip_quoted_segments.py` for: `strip_quoted_segments` removes quoted text and quotes, preserves unquoted text, handles no-quotes input, handles only-quotes input, handles unmatched trailing quote
+- [x] T010 [P] [US1] Add tests to `backend/tests/test_melody_model.py` (or existing test file) for: `Melody.save()` sets correct `note_count` when notation contains quoted lyrics, `note_count` is zero when notation is only quoted lyrics (this should fail validation in `clean()`)
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Update `transposeNotes()` in `frontend/src/utils/transposer.js` — for lines containing double quotes, split into segments via `parseLineSegments`, transpose only notation segments, reassemble with original quote delimiters preserved in the raw text
-- [ ] T012 [P] [US1] Update `convertAccidentals()` in `frontend/src/utils/transposer.js` — same quote-aware approach as `transposeNotes`
-- [ ] T013 [P] [US1] Add `strip_quoted_segments()` to `backend/melodies/utils.py` — regex or scan that removes `"..."` segments and the quotes, returning only non-quoted text
-- [ ] T014 [US1] Update `Melody.save()` in `backend/melodies/models.py` — call `strip_quoted_segments(self.notation)` before splitting and counting syllables
-- [ ] T015 [US1] Update `renderHighlightedContent()` in `frontend/src/components/MelodyComposer.js` — for `type: 'mixed'` lines, render each segment with its own `<span>`: notation segments get class `highlight-notes`, lyrics segments get class `highlight-lyrics`; apply `renderLineWithHiddenNotes` only to notation segments
-- [ ] T016 [US1] Add CSS class `highlight-inline-lyrics` (or reuse `highlight-lyrics`) in `frontend/src/components/MelodyComposer.css` if a distinct inline-lyrics style is needed (verify orange/italic matches existing lyrics style)
+- [x] T011 [P] [US1] Update `transposeNotes()` in `frontend/src/utils/transposer.js` — for lines containing double quotes, split into segments via `parseLineSegments`, transpose only notation segments, reassemble with original quote delimiters preserved in the raw text
+- [x] T012 [P] [US1] Update `convertAccidentals()` in `frontend/src/utils/transposer.js` — same quote-aware approach as `transposeNotes`
+- [x] T013 [P] [US1] Add `strip_quoted_segments()` to `backend/melodies/utils.py` — regex or scan that removes `"..."` segments and the quotes, returning only non-quoted text
+- [x] T014 [US1] Update `Melody.save()` in `backend/melodies/models.py` — call `strip_quoted_segments(self.notation)` before splitting and counting syllables
+- [x] T015 [US1] Update `renderHighlightedContent()` in `frontend/src/components/MelodyComposer.js` — for `type: 'mixed'` lines, render each segment with its own `<span>`: notation segments get class `highlight-notes`, lyrics segments get class `highlight-lyrics`; apply `renderLineWithHiddenNotes` only to notation segments
+- [x] T016 [US1] Add CSS class `highlight-inline-lyrics` (or reuse `highlight-lyrics`) in `frontend/src/components/MelodyComposer.css` if a distinct inline-lyrics style is needed (verify orange/italic matches existing lyrics style)
 
 **Checkpoint**: User Story 1 fully functional — mixed lines render correctly in the composer, transposition preserves lyrics, note count excludes lyrics, backend counts are correct.
 
@@ -75,12 +75,12 @@
 
 ### Tests for User Story 2
 
-- [ ] T017 [P] [US2] Add tests to `frontend/src/utils/validation.test.js` for multi-line quote state: `classifyLines` with an unclosed quote on line 1 classifies subsequent lines as `'lyrics'` until closing quote found, closing quote mid-line resumes notation classification for remaining content, unclosed quote at end of input treats all remaining content as lyrics
+- [x] T017 [P] [US2] Add tests to `frontend/src/utils/validation.test.js` for multi-line quote state: `classifyLines` with an unclosed quote on line 1 classifies subsequent lines as `'lyrics'` until closing quote found, closing quote mid-line resumes notation classification for remaining content, unclosed quote at end of input treats all remaining content as lyrics
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Update `classifyLines()` in `frontend/src/utils/validation.js` — add `inQuote` state tracking across lines: when a line has an odd number of unescaped quotes (opening without closing), set `inQuote = true`; subsequent lines are classified as `'lyrics'` until a line with a closing quote is found; the closing line resumes normal classification for content after the closing quote
-- [ ] T019 [US2] Update `parseNotes()` and `getInvalidSyllables()` in `frontend/src/utils/validation.js` to respect multi-line quote state — lines inside an open multi-line quote are skipped entirely
+- [x] T018 [US2] Update `classifyLines()` in `frontend/src/utils/validation.js` — add `inQuote` state tracking across lines: when a line has an odd number of unescaped quotes (opening without closing), set `inQuote = true`; subsequent lines are classified as `'lyrics'` until a line with a closing quote is found; the closing line resumes normal classification for content after the closing quote
+- [x] T019 [US2] Update `parseNotes()` and `getInvalidSyllables()` in `frontend/src/utils/validation.js` to respect multi-line quote state — lines inside an open multi-line quote are skipped entirely
 
 **Checkpoint**: User Story 2 functional — multi-line quoted lyrics render correctly, classification state propagates across lines.
 
@@ -94,12 +94,12 @@
 
 ### Tests for User Story 3
 
-- [ ] T020 [P] [US3] Add tests to `frontend/src/services/pdfExportService.test.js` for: `renderNotationPage` applies correct colors per segment type for mixed lines (notation segments get notes color, lyrics segments get lyrics color)
+- [x] T020 [P] [US3] Add tests to `frontend/src/services/pdfExportService.test.js` for: `renderNotationPage` applies correct colors per segment type for mixed lines (notation segments get notes color, lyrics segments get lyrics color)
 
 ### Implementation for User Story 3
 
-- [ ] T021 [P] [US3] Update the notation display loop in `frontend/src/pages/SharedMelodyPage.js` — for `line.type === 'mixed'`, iterate `line.segments` and render each with appropriate color (`#2e7d32` for notation, `#e65100` for lyrics`) and font weight; apply `renderLineForView` (hidden notes) only to notation segments
-- [ ] T022 [P] [US3] Update `renderNotationPage()` in `frontend/src/services/pdfExportService.js` — for mixed lines, iterate segments and set text color per segment type using the existing `COLOR_MAP` (notation segments use `COLOR_MAP.notes`, lyrics segments use `COLOR_MAP.lyrics`)
+- [x] T021 [P] [US3] Update the notation display loop in `frontend/src/pages/SharedMelodyPage.js` — for `line.type === 'mixed'`, iterate `line.segments` and render each with appropriate color (`#2e7d32` for notation, `#e65100` for lyrics`) and font weight; apply `renderLineForView` (hidden notes) only to notation segments
+- [x] T022 [P] [US3] Update `renderNotationPage()` in `frontend/src/services/pdfExportService.js` — for mixed lines, iterate segments and set text color per segment type using the existing `COLOR_MAP` (notation segments use `COLOR_MAP.notes`, lyrics segments use `COLOR_MAP.lyrics`)
 
 **Checkpoint**: All three user stories functional — inline lyrics work in composer, across multi-line spans, and in shared/PDF views.
 
@@ -109,10 +109,10 @@
 
 **Purpose**: Edge cases, backward compatibility verification, and cleanup.
 
-- [ ] T023 [P] Verify all edge cases from spec.md: line with only quoted text and no notations classified as lyrics, empty quoted segment (`""`) ignored, nested quotes not supported (first close terminates), single unmatched quote at EOL, hidden notes (`*text*`) inside quotes treated as literal text, instrument tab transposition preserves quoted lyrics
-- [ ] T024 [P] Run full frontend test suite (`cd frontend && npm test -- --watchAll=false`) and verify zero regressions — all existing tests must pass unchanged
-- [ ] T025 [P] Run full backend test suite (`cd backend && pytest -v`) and verify zero regressions
-- [ ] T026 Run quickstart.md manual validation — start both servers, type mixed lines in composer, verify rendering, transpose, save, open shared link, verify PDF export
+- [x] T023 [P] Verify all edge cases from spec.md: line with only quoted text and no notations classified as lyrics, empty quoted segment (`""`) ignored, nested quotes not supported (first close terminates), single unmatched quote at EOL, hidden notes (`*text*`) inside quotes treated as literal text, instrument tab transposition preserves quoted lyrics
+- [x] T024 [P] Run full frontend test suite (`cd frontend && npm test -- --watchAll=false`) and verify zero regressions — all existing tests must pass unchanged
+- [x] T025 [P] Run full backend test suite (`cd backend && pytest -v`) and verify zero regressions
+- [ ] T026 Run quickstart.md manual validation (requires running servers) — start both servers, type mixed lines in composer, verify rendering, transpose, save, open shared link, verify PDF export
 
 ---
 

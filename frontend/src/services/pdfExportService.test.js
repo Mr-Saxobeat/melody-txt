@@ -50,6 +50,15 @@ describe('renderNotationPage', () => {
     expect(fontCalls.some(([, weight]) => weight === 'bold')).toBe(true);
   });
 
+  test('applies correct colors per segment type for mixed lines', () => {
+    const notation = 'sol sol "lyrics here" DO si';
+    renderNotationPage(mockDoc, notation, 210, 297, { top: 15, bottom: 15, left: 15, right: 15 });
+
+    const colorCalls = mockDoc.setTextColor.mock.calls;
+    expect(colorCalls).toContainEqual([46, 125, 50]);
+    expect(colorCalls).toContainEqual([230, 81, 0]);
+  });
+
   test('uses font weight normal for hidden segments', () => {
     const notation = '4Do (Re) Mi';
     renderNotationPage(mockDoc, notation, 210, 297, { top: 15, bottom: 15, left: 15, right: 15 });

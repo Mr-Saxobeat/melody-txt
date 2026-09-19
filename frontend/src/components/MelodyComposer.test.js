@@ -53,6 +53,25 @@ describe('MelodyComposer', () => {
     expect(handleValidation).toHaveBeenCalledWith(true);
   });
 
+  test('renders mixed line with separate spans for notation and lyrics', () => {
+    const { container } = render(
+      <MelodyComposer notation={'sol sol "Parabéns" DO si'} onChange={() => {}} />
+    );
+    const backdrop = container.querySelector('.editor-backdrop');
+    expect(backdrop.innerHTML).toContain('highlight-notes');
+    expect(backdrop.innerHTML).toContain('highlight-lyrics');
+  });
+
+  test('pure note and lyrics lines render unchanged (regression)', () => {
+    const { container } = render(
+      <MelodyComposer notation={'do re mi\nHappy birthday'} onChange={() => {}} />
+    );
+    const backdrop = container.querySelector('.editor-backdrop');
+    const html = backdrop.innerHTML;
+    expect(html).toContain('highlight-notes');
+    expect(html).toContain('highlight-lyrics');
+  });
+
   test('calls onValidationChange with true for pure lyrics', () => {
     const handleValidation = jest.fn();
     render(

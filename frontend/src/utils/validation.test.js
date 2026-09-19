@@ -101,6 +101,102 @@ describe('classifyLines', () => {
   });
 });
 
+describe('classifyLines with inline lyrics', () => {
+  test('classifies line with quotes and notation as mixed with segments', () => {
+    const result = classifyLines('sol sol "text" DO');
+    expect(result[0].type).toBe('mixed');
+    expect(result[0].segments).toEqual([
+      { text: 'sol sol ', type: 'notation' },
+      { text: 'text', type: 'lyrics' },
+      { text: ' DO', type: 'notation' },
+    ]);
+  });
+
+  test('classifies line with only quoted text as lyrics', () => {
+    const result = classifyLines('"just some lyrics"');
+    expect(result[0].type).toBe('lyrics');
+  });
+
+  test('preserves existing behavior for pure note lines', () => {
+    const result = classifyLines('do re mi fa sol');
+    expect(result[0].type).toBe('notes');
+    expect(result[0].segments).toBeUndefined();
+  });
+
+  test('preserves existing behavior for pure lyrics lines', () => {
+    const result = classifyLines('Happy birthday to you');
+    expect(result[0].type).toBe('lyrics');
+  });
+
+  test('classifies lyrics-first mixed line', () => {
+    const result = classifyLines('"Então" DO DO DO "segurar"');
+    expect(result[0].type).toBe('mixed');
+    expect(result[0].segments).toHaveLength(3);
+    expect(result[0].segments[0].type).toBe('lyrics');
+    expect(result[0].segments[1].type).toBe('notation');
+    expect(result[0].segments[2].type).toBe('lyrics');
+  });
+
+  test('mixed classification works alongside other line types', () => {
+    const result = classifyLines('sol "text" DO\nHappy birthday\ndo re mi');
+    expect(result[0].type).toBe('mixed');
+    expect(result[1].type).toBe('lyrics');
+    expect(result[2].type).toBe('notes');
+  });
+
+  test('line with quotes but non-note tokens outside quotes is lyrics', () => {
+    const result = classifyLines('"lyrics" random words here');
+    expect(result[0].type).toBe('lyrics');
+  });
+});
+
+describe('parseNotes with inline lyrics', () => {
+  test('excludes tokens inside quoted segments', () => {
+    expect(parseNotes('sol sol "text here" DO si')).toEqual(['sol', 'sol', 'DO', 'si']);
+  });
+
+  test('works with pure note lines (no quotes)', () => {
+    expect(parseNotes('do re mi')).toEqual(['do', 're', 'mi']);
+  });
+});
+
+describe('countNotes with inline lyrics', () => {
+  test('excludes quoted lyrics from count', () => {
+    expect(countNotes('sol sol "Parabéns pra você" DO si')).toBe(4);
+  });
+
+  test('works unchanged for pure note lines', () => {
+    expect(countNotes('do re mi')).toBe(3);
+  });
+});
+
+describe('estimateDuration with inline lyrics', () => {
+  test('reflects updated count excluding lyrics', () => {
+    expect(estimateDuration('sol sol "lyrics" DO si')).toBe(2.0);
+  });
+});
+
+describe('classifyLines with multi-line quotes', () => {
+  test('unclosed quote classifies subsequent lines as lyrics', () => {
+    const result = classifyLines('do re "start\nlyrics line\nend" sol la');
+    expect(result[0].type).toBe('mixed');
+    expect(result[1].type).toBe('lyrics');
+    expect(result[2].type).toBe('mixed');
+  });
+
+  test('unclosed quote at end of input treats remaining as lyrics', () => {
+    const result = classifyLines('do re "start\nlyrics line');
+    expect(result[0].type).toBe('mixed');
+    expect(result[1].type).toBe('lyrics');
+  });
+
+  test('closing quote mid-line resumes notation classification', () => {
+    const result = classifyLines('"start\nclosing" do re mi');
+    expect(result[0].type).toBe('lyrics');
+    expect(result[1].type).toBe('mixed');
+  });
+});
+
 describe('getInvalidSyllables', () => {
   test('returns empty array for valid notation', () => {
     expect(getInvalidSyllables('do re mi')).toEqual([]);

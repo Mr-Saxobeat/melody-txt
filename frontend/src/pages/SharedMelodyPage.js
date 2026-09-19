@@ -166,6 +166,30 @@ function SharedMelodyPage() {
 
         <div style={{ fontSize: `${fontSize}rem`, fontWeight: 600, whiteSpace: 'pre-wrap', marginBottom: '12px' }}>
           {classifyLines(displayNotation).map((line, i, arr) => {
+            if (line.type === 'mixed' && line.segments) {
+              return (
+                <span key={i}>
+                  {line.segments.map((seg, j) => {
+                    const color = seg.type === 'notation' ? '#2e7d32' : '#e65100';
+                    const fontStyle = seg.type === 'lyrics' ? 'italic' : 'normal';
+                    if (seg.type === 'notation') {
+                      const hiddenSegs = renderLineForView(seg.text, 'notes');
+                      return hiddenSegs.map((hs, k) => (
+                        <span key={`${j}-${k}`} style={{ color: hs.hidden ? 'hsla(120, 7%, 77%, 1.00)' : color, fontWeight: hs.hidden ? 400 : 600 }}>
+                          {hs.text}
+                        </span>
+                      ));
+                    }
+                    return (
+                      <span key={j} style={{ color, fontWeight: 600, fontStyle }}>
+                        {seg.text}
+                      </span>
+                    );
+                  })}
+                  {i < arr.length - 1 ? '\n' : ''}
+                </span>
+              );
+            }
             const baseColor = line.type === 'notes' ? '#2e7d32' : line.type === 'lyrics' ? '#e65100' : '#333';
             const mutedColor = line.type === 'notes' ? 'hsla(120, 7%, 77%, 1.00)' : line.type === 'lyrics' ? '#ffab91' : '#999';
             const segments = renderLineForView(line.text, line.type);

@@ -20,6 +20,20 @@ IGNORED_SYMBOL_REGEX = re.compile(r'^[|:\-./()0-9,;]+$')
 STRIP_SYMBOLS_REGEX = re.compile(r'^[|:\-./()]*(.*?)[|:\-./()]*$')
 
 
+QUOTED_SEGMENT_REGEX = re.compile(r'"[^"]*"')
+
+
+def strip_quoted_segments(text):
+    """Remove double-quote-delimited segments and their quotes from text."""
+    if not text:
+        return text
+    result = QUOTED_SEGMENT_REGEX.sub('', text)
+    unmatched = result.find('"')
+    if unmatched != -1:
+        result = result[:unmatched]
+    return result
+
+
 def strip_symbols(token):
     """Strip leading/trailing ignored symbols from a token."""
     match = STRIP_SYMBOLS_REGEX.match(token)

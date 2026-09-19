@@ -4,6 +4,10 @@ import { renderLineWithHiddenNotes } from '../utils/hiddenNotes';
 import useTranslation from '../i18n/useTranslation';
 import './MelodyComposer.css';
 
+function escapeHtml(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function MelodyComposer({ notation, onChange, onValidationChange }) {
   const textareaRef = useRef(null);
   const backdropRef = useRef(null);
@@ -16,7 +20,7 @@ function MelodyComposer({ notation, onChange, onValidationChange }) {
     }
 
     const lines = classifyLines(notation);
-    const hasNoteLines = lines.some((l) => l.type === 'notes');
+    const hasNoteLines = lines.some((l) => l.type === 'notes' || l.type === 'mixed');
     onValidationChange?.(hasNoteLines || lines.every((l) => l.type === 'lyrics' || l.type === 'empty'));
   }, [notation, onValidationChange]);
 
@@ -48,6 +52,15 @@ function MelodyComposer({ notation, onChange, onValidationChange }) {
     if (!notation) return '';
     const lines = classifyLines(notation);
     return lines.map((line) => {
+      if (line.type === 'mixed' && line.segments) {
+        return line.segments.map((seg) => {
+          const className = seg.type === 'notation' ? 'highlight-notes' : 'highlight-lyrics';
+          const content = seg.type === 'notation'
+            ? renderLineWithHiddenNotes(seg.text, 'notes')
+            : escapeHtml(seg.text);
+          return `<span class="${className}">${content}</span>`;
+        }).join('');
+      }
       const className = line.type === 'notes' ? 'highlight-notes' : line.type === 'lyrics' ? 'highlight-lyrics' : '';
       return `<span class="${className}">${renderLineWithHiddenNotes(line.text, line.type)}</span>`;
     }).join('\n');

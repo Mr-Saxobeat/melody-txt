@@ -45,21 +45,48 @@ export function renderNotationPage(doc, notation, pageWidth, pageHeight, margins
       continue;
     }
 
-    const segments = renderLineForView(line.text, line.type);
     let x = margins.left;
 
-    for (const seg of segments) {
-      const colorSet = COLOR_MAP[line.type] || COLOR_MAP.lyrics;
-      const [r, g, b] = seg.hidden ? colorSet.hidden : colorSet.visible;
-      const fontWeight = seg.hidden ? 'normal' : 'bold';
+    if (line.type === 'mixed' && line.segments) {
+      for (const lineSeg of line.segments) {
+        const colorSet = lineSeg.type === 'notation' ? COLOR_MAP.notes : COLOR_MAP.lyrics;
 
-      doc.setTextColor(r, g, b);
-      doc.setFont('helvetica', fontWeight);
-      doc.setFontSize(fontSize);
+        if (lineSeg.type === 'notation') {
+          const hiddenSegs = renderLineForView(lineSeg.text, 'notes');
+          for (const seg of hiddenSegs) {
+            const [r, g, b] = seg.hidden ? colorSet.hidden : colorSet.visible;
+            doc.setTextColor(r, g, b);
+            doc.setFont('helvetica', seg.hidden ? 'normal' : 'bold');
+            doc.setFontSize(fontSize);
+            const textWidth = doc.getStringUnitWidth(seg.text) * fontSize / doc.internal.scaleFactor;
+            doc.text(seg.text, x, y);
+            x += textWidth;
+          }
+        } else {
+          const [r, g, b] = colorSet.visible;
+          doc.setTextColor(r, g, b);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(fontSize);
+          const textWidth = doc.getStringUnitWidth(lineSeg.text) * fontSize / doc.internal.scaleFactor;
+          doc.text(lineSeg.text, x, y);
+          x += textWidth;
+        }
+      }
+    } else {
+      const segments = renderLineForView(line.text, line.type);
+      for (const seg of segments) {
+        const colorSet = COLOR_MAP[line.type] || COLOR_MAP.lyrics;
+        const [r, g, b] = seg.hidden ? colorSet.hidden : colorSet.visible;
+        const fontWeight = seg.hidden ? 'normal' : 'bold';
 
-      const textWidth = doc.getStringUnitWidth(seg.text) * fontSize / doc.internal.scaleFactor;
-      doc.text(seg.text, x, y);
-      x += textWidth;
+        doc.setTextColor(r, g, b);
+        doc.setFont('helvetica', fontWeight);
+        doc.setFontSize(fontSize);
+
+        const textWidth = doc.getStringUnitWidth(seg.text) * fontSize / doc.internal.scaleFactor;
+        doc.text(seg.text, x, y);
+        x += textWidth;
+      }
     }
 
     y += lineHeight;

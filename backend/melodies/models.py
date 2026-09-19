@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
-from .utils import is_valid_solfege_notation, generate_share_id
+from .utils import is_valid_solfege_notation, generate_share_id, strip_quoted_segments
 
 
 class Instrument(models.Model):
@@ -94,7 +94,8 @@ class Melody(models.Model):
         if not self.share_id:
             self.share_id = generate_share_id()
 
-        syllables = self.notation.split()
+        stripped = strip_quoted_segments(self.notation)
+        syllables = stripped.split()
         self.note_count = len(syllables)
         self.duration_seconds = self.note_count * 0.5
 

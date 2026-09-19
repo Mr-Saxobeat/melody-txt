@@ -120,6 +120,36 @@ describe('transposeDown', () => {
   });
 });
 
+describe('transposeNotes with inline lyrics (quotes)', () => {
+  test('preserves quoted segments verbatim when transposing', () => {
+    expect(transposeNotes('sol sol "happy" DO si', 1)).toBe('sol# sol# "happy" DO# DO');
+  });
+
+  test('transposes only notation segments on mixed line', () => {
+    expect(transposeNotes('"lyrics" DO DO DO "more"', 2)).toBe('"lyrics" RE RE RE "more"');
+  });
+
+  test('preserves quoted segments when transposing down', () => {
+    expect(transposeNotes('re "text" mi', -1)).toBe('reb "text" mib');
+  });
+
+  test('handles line that is entirely quoted (no transposition)', () => {
+    expect(transposeNotes('"just lyrics line"', 1)).toBe('"just lyrics line"');
+  });
+
+  test('isNoteLine returns false for entirely quoted lyrics', () => {
+    const { isNoteLine: isNL } = require('./transposer');
+    expect(isNL('"Parabéns pra você"')).toBe(false);
+  });
+});
+
+describe('convertAccidentals with inline lyrics', () => {
+  test('preserves quoted segments when converting accidentals', () => {
+    const { convertAccidentals } = require('./transposer');
+    expect(convertAccidentals('do# "text" re#', false)).toBe('reb "text" mib');
+  });
+});
+
 describe('transposeNotes with hidden notes (asterisks)', () => {
   test('transposes notes inside asterisks normally', () => {
     const result = transposeNotes('do re *do mi* fa', 1);
