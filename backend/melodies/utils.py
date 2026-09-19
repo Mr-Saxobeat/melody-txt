@@ -289,17 +289,28 @@ def migrate_notation_format(text):
     return '\n'.join(result)
 
 
-def transpose_between_instruments(notation, from_instrument, to_instrument):
+def transpose_between_instruments(notation, from_instrument_id, to_instrument_id):
     """
     Transpose notation between two instruments using their concert pitch offsets.
 
+    Accepts instrument UUIDs (as strings). Looks up offsets from the database.
     Net shift = target.offset - source.offset semitones applied to each note.
     Non-note lines (lyrics) are preserved as-is.
     """
-    from melodies.models import INSTRUMENT_OFFSETS
+    from melodies.models import Instrument
 
-    from_offset = INSTRUMENT_OFFSETS.get(from_instrument, 0)
-    to_offset = INSTRUMENT_OFFSETS.get(to_instrument, 0)
+    try:
+        from_inst = Instrument.objects.get(pk=from_instrument_id)
+        from_offset = from_inst.offset
+    except (Instrument.DoesNotExist, ValueError):
+        from_offset = 0
+
+    try:
+        to_inst = Instrument.objects.get(pk=to_instrument_id)
+        to_offset = to_inst.offset
+    except (Instrument.DoesNotExist, ValueError):
+        to_offset = 0
+
     net_shift = to_offset - from_offset
 
     if net_shift == 0:

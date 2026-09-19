@@ -46,10 +46,7 @@
     "selectHint": "Escolha o instrumento em que você vai compor",
     "selectInstrument": "Selecionar Instrumento",
     "cancel": "Cancelar",
-    "piano": "Piano",
-    "saxophone": "Saxofone",
-    "trumpet": "Trompete",
-    "trombone": "Trombone",
+    "unknown": "Instrumento",
     "deleteConfirm": {
       "title": "Excluir Instrumento",
       "message": "Tem certeza que deseja excluir a aba de {name}?",

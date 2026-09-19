@@ -10,7 +10,7 @@ import FlatToggle from '../components/FlatToggle';
 import { useAuth } from '../hooks/useAuth';
 import melodyService from '../services/melodyService';
 import { transposeNotes } from '../utils/transposer';
-import { INSTRUMENTS, transposeForInstrument } from '../utils/instruments';
+import { loadInstruments, getInstrumentById, transposeForInstrument } from '../utils/instruments';
 import useTranslation from '../i18n/useTranslation';
 import './ComposerPage.css';
 
@@ -39,30 +39,36 @@ function ComposerPage() {
   const notation = activeTab ? activeTab.notation : '';
 
   useEffect(() => {
-    const editId = searchParams.get('edit');
-    if (editId && isAuthenticated) {
-      melodyService.getMelody(editId).then((melody) => {
-        setTitle(melody.title);
-        setEditingId(melody.id);
-        setShowSourceModal(false);
-        if (melody.tabs && melody.tabs.length > 0) {
-          setTabs(melody.tabs);
-          setActiveTabId(melody.tabs[0].id);
-          setSourceInstrument(melody.tabs[0].instrument);
-        } else {
-          const defaultTab = { id: 'local-0', instrument: 'piano', notation: melody.notation, position: 0, suffix: null };
-          setTabs([defaultTab]);
-          setActiveTabId('local-0');
-          setSourceInstrument('piano');
-        }
-      }).catch(() => {});
-    } else {
-      setTabs((prev) => {
-        if (prev.length > 0) return prev;
-        setShowSourceModal(true);
-        return [];
-      });
-    }
+    const init = async () => {
+      await loadInstruments();
+      const editId = searchParams.get('edit');
+      if (editId && isAuthenticated) {
+        try {
+          const melody = await melodyService.getMelody(editId);
+          setTitle(melody.title);
+          setEditingId(melody.id);
+          setShowSourceModal(false);
+          if (melody.tabs && melody.tabs.length > 0) {
+            setTabs(melody.tabs);
+            setActiveTabId(melody.tabs[0].id);
+            setSourceInstrument(melody.tabs[0].instrument?.id || melody.tabs[0].instrument);
+          } else {
+            const piano = getInstrumentById(null);
+            const defaultTab = { id: 'local-0', instrument: piano, notation: melody.notation, position: 0, suffix: null };
+            setTabs([defaultTab]);
+            setActiveTabId('local-0');
+            setSourceInstrument(piano?.id);
+          }
+        } catch {}
+      } else {
+        setTabs((prev) => {
+          if (prev.length > 0) return prev;
+          setShowSourceModal(true);
+          return [];
+        });
+      }
+    };
+    init();
   }, [searchParams, isAuthenticated]);
 
   const updateActiveNotation = (newNotation) => {
@@ -76,12 +82,14 @@ function ComposerPage() {
     setIsValid(valid);
   };
 
+  const getInstId = (tab) => tab.instrument?.id || tab.instrument;
+
   const handleTabSelect = (tabId) => {
-    if (sourceInstrument && activeTab && activeTab.instrument === sourceInstrument && activeTab.notation && activeTab.notation.trim()) {
+    if (sourceInstrument && activeTab && getInstId(activeTab) === sourceInstrument && activeTab.notation && activeTab.notation.trim()) {
       setTabs((prev) => prev.map((t) => {
         if (t.id === activeTab.id) return t;
         if (t.notation && t.notation.trim()) return t;
-        const transposed = transposeForInstrument(activeTab.notation, sourceInstrument, t.instrument, !preferFlat);
+        const transposed = transposeForInstrument(activeTab.notation, sourceInstrument, getInstId(t), !preferFlat);
         return { ...t, notation: transposed };
       }));
     }
@@ -95,16 +103,16 @@ function ComposerPage() {
   const handleSourceSelect = (instrumentId) => {
     setSourceInstrument(instrumentId);
     setShowSourceModal(false);
-    const newTabs = INSTRUMENTS.map((inst, i) => ({
-      id: `local-${i}`,
-      instrument: inst.id,
+    const instrument = getInstrumentById(instrumentId);
+    const newTab = {
+      id: 'local-0',
+      instrument: instrument,
       notation: '',
-      position: i,
+      position: 0,
       suffix: null,
-    }));
-    setTabs(newTabs);
-    const sourceTab = newTabs.find((t) => t.instrument === instrumentId);
-    setActiveTabId(sourceTab ? sourceTab.id : newTabs[0].id);
+    };
+    setTabs([newTab]);
+    setActiveTabId('local-0');
   };
 
   const handleFlatToggle = (flat) => {
@@ -133,13 +141,14 @@ function ComposerPage() {
       setSourceInstrument(instrumentId);
     }
     const fromTab = activeTab;
-    const fromInstrument = fromTab ? fromTab.instrument : 'piano';
+    const fromInstrument = fromTab ? getInstId(fromTab) : null;
     const fromNotation = fromTab ? fromTab.notation : '';
     const transposed = transposeForInstrument(fromNotation, fromInstrument, instrumentId, !preferFlat);
+    const instrument = getInstrumentById(instrumentId);
     const newId = `local-${Date.now()}`;
     const newTab = {
       id: newId,
-      instrument: instrumentId,
+      instrument: instrument,
       notation: transposed,
       position: tabs.length,
       suffix: null,
@@ -216,17 +225,17 @@ function ComposerPage() {
     setSaveError(null);
 
     let tabsToSave = tabs;
-    const srcTab = tabs.find((t) => t.instrument === sourceInstrument);
+    const srcTab = tabs.find((t) => getInstId(t) === sourceInstrument);
     if (sourceInstrument && srcTab && srcTab.notation && srcTab.notation.trim()) {
       tabsToSave = tabs.map((t) => {
         if (t.notation && t.notation.trim()) return t;
-        const transposed = transposeForInstrument(srcTab.notation, sourceInstrument, t.instrument, !preferFlat);
+        const transposed = transposeForInstrument(srcTab.notation, sourceInstrument, getInstId(t), !preferFlat);
         return { ...t, notation: transposed };
       });
       setTabs(tabsToSave);
     }
 
-    const sourceTab = tabsToSave.find((t) => t.instrument === sourceInstrument);
+    const sourceTab = tabsToSave.find((t) => getInstId(t) === sourceInstrument);
     const primaryNotation = sourceTab?.notation || tabsToSave[0]?.notation || '';
 
     try {
@@ -246,12 +255,13 @@ function ComposerPage() {
       const savedTabs = [];
       for (let i = 0; i < tabsToSave.length; i++) {
         const t = tabsToSave[i];
+        const instId = getInstId(t);
         const saved = await melodyService.addTab(
           melodyId,
-          t.instrument,
+          instId,
           t.notation,
           i,
-          t.instrument,
+          instId,
           t.suffix,
         );
         savedTabs.push(saved);
@@ -328,7 +338,7 @@ function ComposerPage() {
               message={t('instrument.deleteConfirm.message', {
                 name: (() => {
                   const tab = tabs.find((tb) => tb.id === pendingDeleteTabId);
-                  return tab ? t(`instrument.${tab.instrument}`) : '';
+                  return tab ? (tab.instrument?.name || '') : '';
                 })(),
               })}
               confirmLabel={t('instrument.deleteConfirm.confirm')}

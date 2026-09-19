@@ -8,6 +8,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import (
     UserRegistrationSerializer,
     UserSerializer,
+    InstrumentSerializer,
     MelodySerializer,
     MelodyTabSerializer,
     SharedMelodySerializer,
@@ -17,10 +18,21 @@ from .serializers import (
     SharedSetlistSerializer,
     SiteSettingsSerializer,
 )
-from melodies.models import Melody, MelodyTab
+from melodies.models import Instrument, Melody, MelodyTab
 from melodies.utils import transpose_between_instruments
 from setlists.models import Setlist, SetlistEntry
 from config.models import SiteSettings
+
+
+class InstrumentListView(generics.ListAPIView):
+    """Public endpoint listing all instruments alphabetically."""
+
+    serializer_class = InstrumentSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
+
+    def get_queryset(self):
+        return Instrument.objects.all()
 
 
 class MelodyCursorPagination(CursorPagination):
@@ -168,17 +180,20 @@ class MelodyTabView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        instrument = request.data.get('instrument')
-        valid_instruments = [c[0] for c in MelodyTab._meta.get_field('instrument').choices]
-        if not instrument or instrument not in valid_instruments:
+        instrument_id = request.data.get('instrument')
+        try:
+            instrument = Instrument.objects.get(pk=instrument_id)
+        except (Instrument.DoesNotExist, ValueError):
             return Response(
-                {'instrument': f'Must be one of: {", ".join(valid_instruments)}'},
+                {'instrument': 'Instrument not found.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        source_instrument = request.data.get('source_instrument', 'piano')
+        source_instrument_id = request.data.get('source_instrument')
         source_notation = request.data.get('notation') or melody.notation
-        notation = transpose_between_instruments(source_notation, source_instrument, instrument)
+        notation = transpose_between_instruments(
+            source_notation, source_instrument_id, str(instrument.pk)
+        )
 
         position = request.data.get('position', melody.tabs.count())
         suffix = request.data.get('suffix')

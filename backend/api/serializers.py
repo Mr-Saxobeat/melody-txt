@@ -103,12 +103,23 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
 
-class MelodyTabSerializer(serializers.ModelSerializer):
-    """Serializer for instrument tabs."""
+class InstrumentSerializer(serializers.ModelSerializer):
+    """Serializer for instruments."""
 
     class Meta:
         model = None  # Set below after import
-        fields = ['id', 'instrument', 'notation', 'position', 'suffix', 'created_at']
+        fields = ['id', 'name', 'pitch', 'offset']
+        read_only_fields = ['id', 'offset']
+
+
+class MelodyTabSerializer(serializers.ModelSerializer):
+    """Serializer for instrument tabs."""
+    instrument = InstrumentSerializer(read_only=True)
+    instrument_id = serializers.UUIDField(write_only=True, source='instrument.id', required=False)
+
+    class Meta:
+        model = None  # Set below after import
+        fields = ['id', 'instrument', 'instrument_id', 'notation', 'position', 'suffix', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 
@@ -236,8 +247,9 @@ class SiteSettingsSerializer(serializers.Serializer):
 
 # Deferred model assignment to avoid circular imports
 def _set_models():
-    from melodies.models import Melody, MelodyTab
+    from melodies.models import Instrument, Melody, MelodyTab
     from setlists.models import Setlist, SetlistEntry
+    InstrumentSerializer.Meta.model = Instrument
     MelodyTabSerializer.Meta.model = MelodyTab
     MelodySerializer.Meta.model = Melody
     SharedMelodySerializer.Meta.model = Melody

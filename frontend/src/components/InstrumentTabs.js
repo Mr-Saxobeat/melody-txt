@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { INSTRUMENTS, getInstrumentById } from '../utils/instruments';
+import { getLoadedInstruments } from '../utils/instruments';
 import useTranslation from '../i18n/useTranslation';
 import './InstrumentTabs.css';
 
@@ -26,7 +26,7 @@ function InstrumentTabs({ tabs, activeTabId, onTabSelect, onAddTab, onDeleteTab,
   };
 
   const getTabLabel = (tab) => {
-    const name = t(`instrument.${tab.instrument}`);
+    const name = tab.instrument?.name || t('instrument.unknown');
     return tab.suffix ? `${name} - ${tab.suffix}` : name;
   };
 
@@ -127,13 +127,13 @@ function InstrumentTabs({ tabs, activeTabId, onTabSelect, onAddTab, onDeleteTab,
           <div className="instrument-modal" onClick={(e) => e.stopPropagation()}>
             <h3>{t('instrument.selectInstrument')}</h3>
             <div className="instrument-list">
-              {INSTRUMENTS.map((inst) => (
+              {getLoadedInstruments().map((inst) => (
                 <button
                   key={inst.id}
                   className="instrument-option"
                   onClick={() => handleInstrumentSelect(inst.id)}
                 >
-                  {t(`instrument.${inst.id}`)} in {inst.key}
+                  {inst.name} in {inst.pitch}
                 </button>
               ))}
             </div>

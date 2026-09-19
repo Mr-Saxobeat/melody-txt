@@ -1,6 +1,19 @@
 import api from './api';
 
+let cachedInstruments = null;
+
 const melodyService = {
+  async getInstruments() {
+    if (cachedInstruments) return cachedInstruments;
+    const response = await api.get('/instruments/');
+    cachedInstruments = response.data;
+    return cachedInstruments;
+  },
+
+  clearInstrumentCache() {
+    cachedInstruments = null;
+  },
+
   async createMelody(title, notation, key = 'C', isPublic = true) {
     const response = await api.post('/melodies/', {
       title,

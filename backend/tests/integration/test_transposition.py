@@ -90,7 +90,7 @@ class TestTransposeMelody:
         )
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_transpose_other_user_melody(self, authenticated_client):
+    def test_transpose_other_user_melody_succeeds(self, authenticated_client):
         other_user = User.objects.create_user(
             username='other', email='other@example.com', password='TestPass123'
         )
@@ -102,7 +102,7 @@ class TestTransposeMelody:
             {'target_key': 'G'},
             format='json',
         )
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code == status.HTTP_200_OK
 
     def test_transpose_returns_frequencies(self, authenticated_client, melody):
         response = authenticated_client.post(

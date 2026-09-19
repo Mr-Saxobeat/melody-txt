@@ -1,5 +1,18 @@
 from django.contrib import admin
-from .models import Melody
+from .models import Instrument, Melody
+
+
+@admin.register(Instrument)
+class InstrumentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'pitch', 'offset']
+    list_filter = ['pitch']
+    search_fields = ['name']
+    readonly_fields = ['id', 'offset']
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ['pitch']
+        return self.readonly_fields
 
 
 @admin.register(Melody)

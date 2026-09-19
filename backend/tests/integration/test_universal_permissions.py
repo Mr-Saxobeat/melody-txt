@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from melodies.models import Melody, MelodyTab
+from melodies.models import Instrument, Melody, MelodyTab
 from setlists.models import Setlist, SetlistEntry
 
 User = get_user_model()
@@ -142,44 +142,54 @@ class TestCrossUserSetlistCRUD:
 class TestCrossUserTabCRUD:
 
     @pytest.fixture
-    def melody_with_tab(self, melody_by_a):
+    def instruments(self):
+        piano, _ = Instrument.objects.get_or_create(name='Piano', defaults={'pitch': 'C'})
+        sax, _ = Instrument.objects.get_or_create(name='Saxophone', defaults={'pitch': 'Eb'})
+        trumpet, _ = Instrument.objects.get_or_create(name='Trumpet', defaults={'pitch': 'Bb'})
+        return piano, sax, trumpet
+
+    @pytest.fixture
+    def melody_with_tab(self, melody_by_a, instruments):
+        piano, sax, trumpet = instruments
         tab = MelodyTab.objects.create(
             melody=melody_by_a,
-            instrument='piano',
+            instrument=piano,
             notation='do re mi fa sol',
             position=0,
         )
-        return melody_by_a, tab
+        return melody_by_a, tab, instruments
 
     def test_user_b_can_list_tabs_on_a_melody(self, client_b, melody_with_tab):
-        melody, tab = melody_with_tab
+        melody, tab, _ = melody_with_tab
         response = client_b.get(f'/api/melodies/{melody.id}/tabs/')
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
 
     def test_user_b_can_add_tab_to_a_melody(self, client_b, melody_with_tab):
-        melody, _ = melody_with_tab
+        melody, _, instruments = melody_with_tab
+        piano, sax, trumpet = instruments
         data = {
-            'instrument': 'saxophone',
+            'instrument': str(sax.pk),
             'notation': 'la si do#',
             'position': 1,
-            'source_instrument': 'piano',
+            'source_instrument': str(piano.pk),
         }
         response = client_b.post(f'/api/melodies/{melody.id}/tabs/', data, format='json')
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['instrument'] == 'saxophone'
+        assert response.data['instrument']['name'] == 'Saxophone'
 
     def test_user_b_can_update_tab_on_a_melody(self, client_b, melody_with_tab):
-        melody, tab = melody_with_tab
+        melody, tab, _ = melody_with_tab
         data = {'notation': 'fa sol la'}
         response = client_b.put(f'/api/melodies/{melody.id}/tabs/{tab.id}/', data, format='json')
         assert response.status_code == status.HTTP_200_OK
         assert response.data['notation'] == 'fa sol la'
 
     def test_user_b_can_delete_tab_on_a_melody(self, client_b, melody_with_tab):
-        melody, tab = melody_with_tab
+        melody, tab, instruments = melody_with_tab
+        piano, sax, trumpet = instruments
         MelodyTab.objects.create(
-            melody=melody, instrument='trumpet', notation='re mi fa#', position=1
+            melody=melody, instrument=trumpet, notation='re mi fa#', position=1
         )
         response = client_b.delete(f'/api/melodies/{melody.id}/tabs/{tab.id}/')
         assert response.status_code == status.HTTP_204_NO_CONTENT
@@ -239,7 +249,7 @@ class TestUnauthenticatedStillBlocked:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_unauthenticated_cannot_add_tab(self, api_client, melody_by_a):
-        data = {'instrument': 'piano', 'notation': 'do'}
+        data = {'instrument': '00000000-0000-0000-0000-000000000000', 'notation': 'do'}
         response = api_client.post(
             f'/api/melodies/{melody_by_a.id}/tabs/', data, format='json'
         )

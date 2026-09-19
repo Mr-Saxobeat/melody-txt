@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from melodies.models import Melody, MelodyTab
+from melodies.models import Instrument, Melody, MelodyTab
 
 User = get_user_model()
 
@@ -31,7 +31,19 @@ def authenticated_client(api_client, user):
 
 
 @pytest.fixture
-def melody_with_one_tab(user):
+def piano():
+    inst, _ = Instrument.objects.get_or_create(name='Piano', defaults={'pitch': 'C'})
+    return inst
+
+
+@pytest.fixture
+def saxophone():
+    inst, _ = Instrument.objects.get_or_create(name='Saxophone', defaults={'pitch': 'Eb'})
+    return inst
+
+
+@pytest.fixture
+def melody_with_one_tab(user, piano):
     melody = Melody.objects.create(
         user=user,
         title='Single Tab Melody',
@@ -41,7 +53,7 @@ def melody_with_one_tab(user):
     )
     tab = MelodyTab.objects.create(
         melody=melody,
-        instrument='piano',
+        instrument=piano,
         notation='do re mi',
         position=0,
     )
@@ -49,7 +61,7 @@ def melody_with_one_tab(user):
 
 
 @pytest.fixture
-def melody_with_two_tabs(user):
+def melody_with_two_tabs(user, piano, saxophone):
     melody = Melody.objects.create(
         user=user,
         title='Two Tab Melody',
@@ -59,13 +71,13 @@ def melody_with_two_tabs(user):
     )
     tab1 = MelodyTab.objects.create(
         melody=melody,
-        instrument='piano',
+        instrument=piano,
         notation='do re mi',
         position=0,
     )
     tab2 = MelodyTab.objects.create(
         melody=melody,
-        instrument='saxophone',
+        instrument=saxophone,
         notation='la si do#',
         position=1,
     )

@@ -71,7 +71,7 @@ function calculateContentHeight(doc, lines, fontSize, availableWidth) {
   return lines.length * lineHeight;
 }
 
-export async function generatePdfForInstrument(instrument, melodies, setlistTitle, { createDoc } = {}) {
+export async function generatePdfForInstrument(instrumentId, instrumentName, melodies, setlistTitle, { createDoc } = {}) {
   const doc = createDoc ? createDoc() : new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
   for (let i = 0; i < melodies.length; i++) {
@@ -80,7 +80,7 @@ export async function generatePdfForInstrument(instrument, melodies, setlistTitl
     }
 
     const melody = melodies[i];
-    const tab = melody.tabs ? melody.tabs.find((t) => t.instrument === instrument) : null;
+    const tab = melody.tabs ? melody.tabs.find((t) => (t.instrument?.id || t.instrument) === instrumentId) : null;
 
     if (tab && tab.notation) {
       renderNotationPage(doc, tab.notation, PAGE_WIDTH, PAGE_HEIGHT, MARGINS);
@@ -88,7 +88,6 @@ export async function generatePdfForInstrument(instrument, melodies, setlistTitl
       doc.setTextColor(100, 100, 100);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(14);
-      const instrumentName = instrument.charAt(0).toUpperCase() + instrument.slice(1);
       doc.text(`No notation available for ${instrumentName}`, MARGINS.left, PAGE_HEIGHT / 2);
       if (melody.title) {
         doc.setTextColor(51, 51, 51);
@@ -102,22 +101,24 @@ export async function generatePdfForInstrument(instrument, melodies, setlistTitl
 }
 
 export async function exportSetlistToPdf(setlist, melodies, { createDoc, createZip } = {}) {
-  const allInstruments = new Set();
+  const instrumentMap = new Map();
   for (const melody of melodies) {
     if (melody.tabs) {
       for (const tab of melody.tabs) {
-        allInstruments.add(tab.instrument);
+        const id = tab.instrument?.id || tab.instrument;
+        const name = tab.instrument?.name || id;
+        if (!instrumentMap.has(id)) {
+          instrumentMap.set(id, name);
+        }
       }
     }
   }
 
-  const instruments = Array.from(allInstruments);
   const zip = createZip ? createZip() : new JSZip();
   const safeTitle = sanitizeFilename(setlist.title);
 
-  for (const instrument of instruments) {
-    const pdfBlob = await generatePdfForInstrument(instrument, melodies, setlist.title, { createDoc });
-    const instrumentName = instrument.charAt(0).toUpperCase() + instrument.slice(1);
+  for (const [instrumentId, instrumentName] of instrumentMap) {
+    const pdfBlob = await generatePdfForInstrument(instrumentId, instrumentName, melodies, setlist.title, { createDoc });
     const filename = `${safeTitle} - ${instrumentName}.pdf`;
     zip.file(filename, pdfBlob);
   }

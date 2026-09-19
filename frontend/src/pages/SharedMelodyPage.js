@@ -6,7 +6,7 @@ import setlistService from '../services/setlistService';
 import { transposeNotes, convertAccidentals } from '../utils/transposer';
 import { classifyLines } from '../utils/validation';
 import { renderLineForView } from '../utils/hiddenNotes';
-import { getInstrumentById } from '../utils/instruments';
+// instruments are loaded via API; tab objects already contain instrument details
 import FlatToggle from '../components/FlatToggle';
 import '../components/TransposeControls.css';
 import { useAuth } from '../hooks/useAuth';
@@ -36,12 +36,12 @@ function SharedMelodyPage() {
     const findMatch = (tabList, query) => {
       if (!query) return 0;
       const labelMatch = tabList.findIndex((tab) => {
-        const name = t(`instrument.${tab.instrument}`);
+        const name = tab.instrument?.name || '';
         const label = tab.suffix ? `${name} - ${tab.suffix}` : name;
         return label.toLowerCase() === query.toLowerCase();
       });
       if (labelMatch >= 0) return labelMatch;
-      const instrumentMatch = tabList.findIndex((tab) => tab.instrument === query);
+      const instrumentMatch = tabList.findIndex((tab) => (tab.instrument?.id || tab.instrument) === query);
       if (instrumentMatch >= 0) return instrumentMatch;
       return 0;
     };
@@ -82,7 +82,7 @@ function SharedMelodyPage() {
   }, [setlistShareId]);
 
   const getTabLabel = (tab) => {
-    const name = t(`instrument.${tab.instrument}`);
+    const name = tab.instrument?.name || t('instrument.unknown');
     return tab.suffix ? `${name} - ${tab.suffix}` : name;
   };
 

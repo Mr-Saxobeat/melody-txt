@@ -3,8 +3,8 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .views import (
-    RegisterView, MelodyViewSet, SharedMelodyView, TransposeMelodyView,
-    RecentMelodiesView, MelodySearchView, MelodyTabView,
+    RegisterView, InstrumentListView, MelodyViewSet, SharedMelodyView,
+    TransposeMelodyView, RecentMelodiesView, MelodySearchView, MelodyTabView,
     SetlistViewSet, SetlistEntryView, SharedSetlistView, RecentSetlistsView,
     SiteSettingsView,
 )
@@ -14,6 +14,7 @@ router.register(r'melodies', MelodyViewSet, basename='melody')
 router.register(r'setlists', SetlistViewSet, basename='setlist')
 
 urlpatterns = [
+    path('instruments/', InstrumentListView.as_view(), name='instrument-list'),
     path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

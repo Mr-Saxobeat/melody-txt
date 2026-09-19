@@ -8,7 +8,7 @@ User = get_user_model()
 
 
 class Command(BaseCommand):
-    help = 'Clear all data except the admin user. Instrument definitions are hardcoded constants (not DB rows).'
+    help = 'Clear all data except the admin user and instrument definitions.'
 
     def add_arguments(self, parser):
         parser.add_argument(

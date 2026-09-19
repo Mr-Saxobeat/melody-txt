@@ -1,19 +1,32 @@
 import { transposeNotes } from './transposer';
+import melodyService from '../services/melodyService';
 
-export const INSTRUMENTS = [
-  { id: 'piano', name: 'Piano', key: 'C', offset: 0 },
-  { id: 'saxophone', name: 'Saxophone', key: 'Eb', offset: 9 },
-  { id: 'trumpet', name: 'Trumpet', key: 'Bb', offset: 2 },
-  { id: 'trombone', name: 'Trombone', key: 'C', offset: 0 },
-];
+let instrumentsCache = null;
+
+export async function loadInstruments() {
+  if (instrumentsCache) return instrumentsCache;
+  instrumentsCache = await melodyService.getInstruments();
+  return instrumentsCache;
+}
+
+export function getLoadedInstruments() {
+  return instrumentsCache || [];
+}
+
+export function clearInstrumentsCache() {
+  instrumentsCache = null;
+  melodyService.clearInstrumentCache();
+}
 
 export function getInstrumentById(id) {
-  return INSTRUMENTS.find((i) => i.id === id) || INSTRUMENTS[0];
+  const instruments = getLoadedInstruments();
+  return instruments.find((i) => i.id === id) || instruments[0];
 }
 
 export function transposeForInstrument(notation, fromInstrument, toInstrument, preferSharp = true) {
   const from = getInstrumentById(fromInstrument);
   const to = getInstrumentById(toInstrument);
+  if (!from || !to) return notation;
   const netShift = to.offset - from.offset;
   if (netShift === 0) return notation;
   return transposeNotes(notation, netShift, preferSharp);
